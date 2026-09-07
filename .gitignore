@@ -44,6 +44,7 @@ venv/
 .ruff_cache/
 staticfiles/
 media/
+*.sqlite3
 
 # Expo (apps/mobile)
 .expo/
