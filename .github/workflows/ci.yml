@@ -1,0 +1,31 @@
+name: CI
+
+# Pipeline skeleton per TDD.MD §7 — test/lint on every PR, build+deploy on merge to main.
+# Actual build/deploy steps are filled in once infra/ is provisioned.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  js:
+    name: JS (web + mobile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: setup-node, install deps, lint, typecheck, build, test
+      # across apps/web and apps/mobile
+      - run: echo "TODO: lint, typecheck, build, test apps/web and apps/mobile"
+
+  python:
+    name: Python (api)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: setup-python, install deps, ruff lint, pytest
+      - run: echo "TODO: ruff lint + pytest for apps/api"
+
+  # TODO (on merge to main): build Docker image for apps/api, push to Amazon ECR,
+  # deploy to App Runner/ECS via GitHub OIDC -> AWS IAM role assumption (TDD §6.3).
+  # TODO: trigger EAS Build/Submit for apps/mobile from this workflow (TDD §7).
