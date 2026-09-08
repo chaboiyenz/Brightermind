@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party
     "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
     "channels",
     "drf_spectacular",
@@ -107,19 +108,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS — web/mobile clients are separate origins from the API (TDD §3).
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
-# Required for session-cookie + CSRF-cookie auth to work cross-origin
-# (apps/web on :3000, apps/api on :8000) — off by default, only meaningful
-# once CORS_ALLOWED_ORIGINS is a real, non-wildcard list (it is, above).
-CORS_ALLOW_CREDENTIALS = env.bool("CORS_ALLOW_CREDENTIALS", default=False)
-
-# Django's CSRF protection checks the Origin header against this list
-# separately from the token itself, for any cross-origin unsafe request —
-# needed for apps/web (a different origin/port) to POST/PATCH/DELETE here.
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+# Token auth (below) sends the token as an Authorization header, not a
+# cookie, so no cookies ever cross the origin boundary for API calls —
+# CORS_ALLOW_CREDENTIALS/CSRF_TRUSTED_ORIGINS were needed for the old
+# dev-only session-cookie login (removed in Phase 3) and are not needed
+# here. Session auth is still what powers /admin/'s own login, which is
+# same-origin and unaffected by this.
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [

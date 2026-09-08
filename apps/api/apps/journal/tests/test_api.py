@@ -80,4 +80,8 @@ def test_user_cannot_access_another_users_entry(
 @pytest.mark.django_db
 def test_unauthenticated_request_rejected() -> None:
     response = APIClient().get("/api/v2/journal-entries/")
-    assert response.status_code == 403
+    # 401, not 403 — Phase 3 switched DEFAULT_AUTHENTICATION_CLASSES to
+    # TokenAuthentication only (see config/settings/base.py), which sets a
+    # WWW-Authenticate header, so DRF returns 401 instead of session auth's
+    # 403 fallback.
+    assert response.status_code == 401

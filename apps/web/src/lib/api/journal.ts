@@ -13,8 +13,8 @@ export interface JournalEntryInput {
   content: string;
 }
 
-export async function fetchJournalEntries(forwardCookie?: string): Promise<JournalEntry[]> {
-  return apiFetch<JournalEntry[]>("/v2/journal-entries/", { forwardCookie });
+export async function fetchJournalEntries(token?: string): Promise<JournalEntry[]> {
+  return apiFetch<JournalEntry[]>("/v2/journal-entries/", { token });
 }
 
 export async function createJournalEntry(input: JournalEntryInput): Promise<JournalEntry> {

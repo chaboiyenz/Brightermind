@@ -23,8 +23,8 @@ export interface CreateTaskInput {
   category?: TaskCategory;
 }
 
-export async function fetchTasks(forwardCookie?: string): Promise<Task[]> {
-  return apiFetch<Task[]>("/v2/tasks/", { forwardCookie });
+export async function fetchTasks(token?: string): Promise<Task[]> {
+  return apiFetch<Task[]>("/v2/tasks/", { token });
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {

@@ -5,14 +5,28 @@ from rest_framework.views import APIView
 from apps.accounts.models import Role
 
 
-class IsAdmin(BasePermission):
-    """Minimal role check, scoped to what content.views actually needs right
-    now. The full reusable IsStudent/IsPsychologist/IsAdmin set (built
-    against the role field, unit tested, used everywhere) is Phase 3's job
-    per docs/roadmap.md — this isn't a substitute for that, just enough to
-    not leave a content-write endpoint open while Phase 3 is still pending."""
+class _HasRole(BasePermission):
+    """Base for the three role-scoped permission classes below. Not used
+    directly — subclass and set `role`."""
+
+    role: Role
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(
-            request.user and request.user.is_authenticated and request.user.role == Role.ADMIN
+            request.user and request.user.is_authenticated and request.user.role == self.role
         )
+
+
+class IsStudent(_HasRole):
+    role = Role.STUDENT
+
+
+class IsPsychologist(_HasRole):
+    role = Role.PSYCHOLOGIST
+
+
+class IsAdmin(_HasRole):
+    # Supersedes the minimal standalone IsAdmin content.views used while
+    # this (the full reusable set) was still Phase 3's job — see
+    # docs/roadmap.md. Same behavior, now sharing _HasRole with its siblings.
+    role = Role.ADMIN

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ToastProvider } from "@/components/ui";
 import { QueryProvider } from "@/components/QueryProvider";
+import { AuthRoleProvider } from "@/components/AuthRoleProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,6 +13,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "BrighterMind",
   description: "Mental health support platform",
+  icons: {
+    icon: "/logo/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -21,15 +25,15 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="font-sans">
         {/*
-          RoleProvider from components/ui goes here, wrapping ToastProvider
-          (or nested inside it), once it's fed by real auth/session data.
-          It's blocked on Ticket 2 (see the TODO in RoleGate.tsx) — that
-          provider currently has no backend role model to call, so it isn't
-          wired in yet. Do not wrap children in RoleProvider with a
-          hardcoded role in the meantime.
+          AuthRoleProvider wires RoleGate/RoleProvider to the real
+          GET /api/v2/auth/me/ endpoint (Phase 3) — replacing the mocked
+          role from Phase 0/2. Needs QueryProvider above it (it uses
+          React Query).
         */}
         <QueryProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <AuthRoleProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthRoleProvider>
         </QueryProvider>
       </body>
     </html>

@@ -1,16 +1,17 @@
 import { cookies } from "next/headers";
-import { fetchJournalEntries, type JournalEntry } from "@/lib/api";
+import { fetchJournalEntries, TOKEN_COOKIE, type JournalEntry } from "@/lib/api";
 import { JournalApp } from "./JournalApp";
 
 export default async function JournalPage() {
-  const cookieStore = await cookies();
+  const token = (await cookies()).get(TOKEN_COOKIE)?.value;
 
+  // Phase 3's token cookie is same-origin (set by apps/web itself), so this
+  // genuinely works now — see apps/web/src/app/mood/page.tsx for the fuller
+  // explanation of what this replaced.
   let entries: JournalEntry[] | undefined;
   try {
-    entries = await fetchJournalEntries(cookieStore.toString());
+    entries = await fetchJournalEntries(token);
   } catch {
-    // Same cross-origin cookie limitation documented in apps/web/src/app/mood/page.tsx —
-    // JournalApp's client-side query is the real data source.
     entries = undefined;
   }
 

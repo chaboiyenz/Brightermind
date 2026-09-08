@@ -27,10 +27,8 @@ export class DuplicateMoodEntryError extends ApiError {
   }
 }
 
-export async function fetchMoodEntries(month: string, forwardCookie?: string): Promise<MoodEntry[]> {
-  return apiFetch<MoodEntry[]>(`/v2/mood-entries/?month=${encodeURIComponent(month)}`, {
-    forwardCookie,
-  });
+export async function fetchMoodEntries(month: string, token?: string): Promise<MoodEntry[]> {
+  return apiFetch<MoodEntry[]>(`/v2/mood-entries/?month=${encodeURIComponent(month)}`, { token });
 }
 
 export async function createMoodEntry(input: CreateMoodEntryInput): Promise<MoodEntry> {
