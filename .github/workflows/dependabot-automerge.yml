@@ -1,0 +1,49 @@
+name: Dependabot auto-merge
+
+# Auto-approves and enables auto-merge for Dependabot PRs, but only for
+# minor/patch bumps. Major-version bumps get no automatic action — left for
+# manual review, since they're the ones most likely to be real breaking
+# changes (see tailwindcss 3->4, eslint-config-next 15->16, which broke CI).
+#
+# pull_request_target (not pull_request) is required here: GitHub gives
+# pull_request-triggered workflows a read-only token when the actor is
+# dependabot[bot], which can't approve or merge. pull_request_target runs
+# with the base branch's workflow file and a token that has write access —
+# safe here because the job never checks out or executes PR head content,
+# and is scoped to github.actor == 'dependabot[bot]' so it can't be
+# triggered by an arbitrary PR just by matching a title.
+#
+# This only handles the approve/merge trigger. The actual safety gate is
+# dev's branch ruleset requiring status checks to pass before merge — this
+# workflow does not, and must not, bypass that.
+
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Approve (minor/patch only)
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge (minor/patch only)
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
