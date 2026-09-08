@@ -9,3 +9,4 @@ export {
   type MoodValue,
 } from "./mood";
 export { devLogin, type DevLoginInput, type DevLoginResult } from "./auth";
+export { fetchContentBlock, type ContentBlock } from "./content";

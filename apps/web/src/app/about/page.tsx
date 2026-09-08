@@ -6,19 +6,20 @@ import { fetchContentBlock, type ContentBlock } from "@/lib/api";
 // time), per the migration plan's "falls back to last-known-good content" note.
 const FALLBACK: ContentBlock = {
   id: 0,
-  slug: "home",
-  title: "BrighterMind",
+  slug: "about",
+  title: "About BrighterMind",
   content:
-    "Mental health support for students — screening tools, mood tracking, " +
-    "coping techniques, and support from registered psychologists, all in " +
-    "one place.",
+    "BrighterMind is a mental health support platform built for students. " +
+    "It provides screening tools, mood tracking, coping technique modules, " +
+    "and a way to connect with registered psychologists. It is a screening " +
+    "and support tool, not a diagnostic one.",
   created_at: "",
 };
 
-export default async function HomePage() {
+export default async function AboutPage() {
   let block: ContentBlock;
   try {
-    block = await fetchContentBlock("home");
+    block = await fetchContentBlock("about");
   } catch {
     block = FALLBACK;
   }

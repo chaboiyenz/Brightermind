@@ -23,4 +23,5 @@ urlpatterns = [
     # (e.g. /api/v2/mood-entries/) — new domain resources go under here.
     path('api/v2/', include('apps.mood_tracker.urls')),
     path('api/v2/', include('apps.accounts.urls')),
+    path('api/v2/', include('apps.content.urls')),
 ]
