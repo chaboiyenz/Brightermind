@@ -1,8 +1,10 @@
 from django.urls import path
 
-from .views import dev_login
+from . import views
 
 urlpatterns = [
-    # TEMPORARY — see the docstring on dev_login. Remove with Phase 3.
-    path("auth/dev-login/", dev_login, name="dev-login"),
+    path("auth/login/", views.login, name="login"),
+    path("auth/register/", views.register, name="register"),
+    path("auth/register/psychologist/", views.register_psychologist, name="register-psychologist"),
+    path("auth/me/", views.me, name="me"),
 ]

@@ -82,6 +82,8 @@ def test_user_cannot_see_another_users_entries(
 @pytest.mark.django_db
 def test_unauthenticated_request_rejected() -> None:
     response = APIClient().get("/api/v2/mood-entries/")
-    # 403, not 401 — SessionAuthentication is first in DEFAULT_AUTHENTICATION_CLASSES
-    # and doesn't set a WWW-Authenticate header, so DRF falls back to 403.
-    assert response.status_code == 403
+    # 401, not 403 — Phase 3 switched DEFAULT_AUTHENTICATION_CLASSES to
+    # TokenAuthentication only (see config/settings/base.py), which sets a
+    # WWW-Authenticate header, so DRF returns 401 instead of session auth's
+    # 403 fallback.
+    assert response.status_code == 401

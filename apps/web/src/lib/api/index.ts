@@ -1,4 +1,4 @@
-export { ApiError, apiFetch, getApiBaseUrl } from "./client";
+export { ApiError, apiFetch, getApiBaseUrl, TOKEN_COOKIE } from "./client";
 export { fetchHealth, type HealthStatus } from "./health";
 export {
   createMoodEntry,
@@ -8,4 +8,15 @@ export {
   type MoodEntry,
   type MoodValue,
 } from "./mood";
-export { devLogin, type DevLoginInput, type DevLoginResult } from "./auth";
+export {
+  clearToken,
+  fetchCurrentUser,
+  login,
+  registerPsychologist,
+  registerStudent,
+  type AuthUser,
+  type LoginInput,
+  type RegisterPsychologistInput,
+  type RegisterStudentInput,
+  type Role,
+} from "./auth";

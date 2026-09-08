@@ -39,53 +39,48 @@ function extractMessage(body: unknown, fallback: string): string {
   return fallback;
 }
 
-const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+// Token-auth cookie (Phase 3 — see docs/roadmap.md). Not httpOnly: client-side
+// code needs to read it to attach the Authorization header on every request,
+// since a bearer token in a header (unlike a session cookie) never crosses
+// the origin boundary automatically. It's readable by JS the same way a
+// localStorage token would be — an accepted tradeoff for the simplicity of
+// not needing a Next.js backend-for-frontend proxy just to keep it httpOnly.
+export const TOKEN_COOKIE = "bm_token";
 
-/** Reads a cookie by name in the browser. Returns null server-side (no
- * `document`) or when the cookie isn't present. */
-function getCookie(name: string): string | null {
+function getClientToken(): string | null {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  const match = document.cookie.match(new RegExp(`(?:^|; )${TOKEN_COOKIE}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
 }
 
 export interface ApiFetchOptions extends RequestInit {
   /**
-   * Server Components only: the incoming request's Cookie header (e.g.
-   * `cookies().toString()` from next/headers), forwarded manually since a
-   * server-side fetch doesn't share the browser's cookie jar the way
-   * `credentials: "include"` does client-side.
+   * Server Components only: the token to authenticate as. There's no
+   * `document.cookie` server-side, so read it via `cookies()` from
+   * next/headers and pass it here explicitly. Client-side calls don't need
+   * this — apiFetch reads the token cookie itself.
    */
-  forwardCookie?: string;
+  token?: string;
 }
 
 export async function apiFetch<T>(path: string, options?: ApiFetchOptions): Promise<T> {
-  const { forwardCookie, ...init } = options ?? {};
+  const { token, ...init } = options ?? {};
   const method = (init.method ?? "GET").toUpperCase();
+  const authToken = token ?? getClientToken();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(init.headers as Record<string, string> | undefined),
   };
 
-  if (forwardCookie) {
-    headers.Cookie = forwardCookie;
-  }
-
-  if (UNSAFE_METHODS.has(method)) {
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-      headers["X-CSRFToken"] = csrfToken;
-    }
+  if (authToken) {
+    headers.Authorization = `Token ${authToken}`;
   }
 
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
     method,
     headers,
-    // Browser-side: sends/receives the session + csrftoken cookies
-    // cross-origin. No effect server-side — that's what forwardCookie is for.
-    credentials: "include",
   });
 
   if (!response.ok) {
