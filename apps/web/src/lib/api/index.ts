@@ -9,3 +9,11 @@ export {
   type MoodValue,
 } from "./mood";
 export { devLogin, type DevLoginInput, type DevLoginResult } from "./auth";
+export {
+  createJournalEntry,
+  deleteJournalEntry,
+  fetchJournalEntries,
+  updateJournalEntry,
+  type JournalEntry,
+  type JournalEntryInput,
+} from "./journal";
