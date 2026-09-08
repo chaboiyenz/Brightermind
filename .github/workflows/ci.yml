@@ -14,9 +14,9 @@ jobs:
     name: JS (web + mobile)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v7
         with:
@@ -55,7 +55,7 @@ jobs:
       DATABASE_URL: sqlite:///db.sqlite3
       CORS_ALLOWED_ORIGINS: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
         with:
