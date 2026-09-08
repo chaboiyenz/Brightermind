@@ -45,6 +45,10 @@ questions, which several phases below depend on).
 - [ ] Confirm the 4 untracked tickets from the frontend migration plan get numbered
       and filed: community endpoint-split + vote dedupe, hotline-CRUD auth fix,
       score-aggregation service extraction, GAD-7 scoring duplication fix
+- [ ] SECURITY.md — deferred, needs a real reporting-contact email decided
+      before launch (GitHub's private vulnerability reporting requires
+      GitHub Advanced Security, a paid feature we're not using for a private
+      repo at this stage)
 
 ---
 
