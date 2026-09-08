@@ -1,0 +1,28 @@
+# CODEOWNERS — automatically requests review from the right people per path.
+# Currently a single-maintainer repo, so everything routes to @chaboiyenz.
+# Split into real teams (@Brightermind/web, @Brightermind/backend, etc.) once
+# there's an actual team — see docs/ci-cd/environment-setup.md.
+# Syntax: https://docs.github.com/articles/about-code-owners
+
+# Default owner for anything not matched below
+*                       @chaboiyenz
+
+# Frontend — web
+/apps/web/              @chaboiyenz
+
+# Frontend — mobile
+/apps/mobile/           @chaboiyenz
+
+# Backend / API
+/apps/api/              @chaboiyenz
+
+# Shared contract types — changes here affect both web and mobile
+/packages/shared/       @chaboiyenz
+
+# Infra and CI/CD — highest scrutiny
+/infra/                 @chaboiyenz
+/.github/workflows/     @chaboiyenz
+/scripts/               @chaboiyenz
+
+# Docs / TDD — architectural decisions
+/docs/                  @chaboiyenz

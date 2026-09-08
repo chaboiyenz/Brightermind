@@ -1,0 +1,48 @@
+name: Deploy — stage
+
+on:
+  push:
+    branches: [stage]
+
+concurrency:
+  group: deploy-stage
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & deploy to staging
+    runs-on: ubuntu-latest
+    environment: stage # can require reviewers in GitHub Environment settings if desired
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC, no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & push API image
+        run: |
+          docker build -t $ECR_REGISTRY/brightermind-api:stage-${{ github.sha }} apps/api
+          docker push $ECR_REGISTRY/brightermind-api:stage-${{ github.sha }}
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+
+      # TODO: replace with actual App Runner / ECS deploy step once infra/ is provisioned
+      - name: Run DB migrations against staging
+        run: echo "TODO — run python manage.py migrate against staging RDS instance"
+
+      - name: Deploy to App Runner (stage)
+        run: echo "TODO — deploy image to stage App Runner service"
+
+      - name: Build & publish mobile preview (EAS)
+        run: echo "TODO — trigger EAS Build for stage profile once Expo project exists"
