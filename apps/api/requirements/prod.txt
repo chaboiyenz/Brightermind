@@ -4,4 +4,4 @@
 # (dev/CI use the in-memory channel layer instead — see config/settings/dev.py).
 gunicorn==23.0.0
 uvicorn[standard]==0.34.0
-channels-redis==4.2.1
+channels-redis==4.3.0
