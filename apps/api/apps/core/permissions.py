@@ -26,4 +26,7 @@ class IsPsychologist(_HasRole):
 
 
 class IsAdmin(_HasRole):
+    # Supersedes the minimal standalone IsAdmin content.views used while
+    # this (the full reusable set) was still Phase 3's job — see
+    # docs/roadmap.md. Same behavior, now sharing _HasRole with its siblings.
     role = Role.ADMIN

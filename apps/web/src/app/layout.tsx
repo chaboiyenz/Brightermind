@@ -13,6 +13,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "BrighterMind",
   description: "Mental health support platform",
+  icons: {
+    icon: "/logo/logo.png",
+  },
 };
 
 export default function RootLayout({
