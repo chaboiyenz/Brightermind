@@ -3,9 +3,14 @@
   "private": true,
   "packageManager": "pnpm@11.5.2",
   "scripts": {
+    "dev": "concurrently -n web,api -c blue,green \"pnpm:dev:web\" \"pnpm:dev:api\"",
     "dev:web": "pnpm --filter web dev",
+    "dev:api": "node scripts/dev-api.mjs",
     "build:web": "pnpm --filter web build",
     "lint:web": "pnpm --filter web lint",
     "typecheck:web": "pnpm --filter web typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }
