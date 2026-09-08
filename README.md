@@ -30,6 +30,33 @@ brightermind-v2/
 
 Each `apps/*` and `packages/*` directory has its own README with setup notes.
 
+## Local development
+
+One-time setup:
+
+```bash
+pnpm install
+cd apps/api && python -m venv .venv
+.venv/Scripts/python.exe -m pip install -r requirements/dev.txt   # .venv/bin/python on macOS/Linux
+cp .env.example .env      # apps/api
+cp ../web/.env.example ../web/.env.local
+.venv/Scripts/python.exe manage.py migrate
+```
+
+Then, from the repo root:
+
+```bash
+pnpm dev
+```
+
+Runs `apps/web` (`next dev`, port 3000) and `apps/api` (`manage.py runserver`,
+port 8000) together, labeled `[web]`/`[api]` in one terminal. Run them
+separately with `pnpm dev:web` / `pnpm dev:api` if you only need one.
+
+There's no real login yet (that's Phase 3 — see `docs/roadmap.md`) — create a
+user via `manage.py shell` or `createsuperuser` and sign in at the temporary
+`/dev-login` page to test pages that need auth, like `/mood`.
+
 ## Branch strategy
 
 | Branch  | Environment | Deployment                          |
