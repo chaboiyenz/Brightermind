@@ -28,27 +28,34 @@ questions, which several phases below depend on).
 
 ---
 
-## Phase 1 — Close out loose ends (IN PROGRESS — do this before new feature work)
+## Phase 1 — Close out loose ends (DONE)
 
-- [ ] Merge PR #3 (`feature/wire-web-to-api` → `dev`)
-- [ ] Resolve `db.sqlite3` tracked-in-git issue — inspect contents, `git rm --cached`,
-      decide if history needs scrubbing based on what's actually in it
-- [ ] Fill in real CI jobs in `ci.yml` (currently `echo "TODO"` placeholders) —
-      lint/typecheck/test for both `apps/web` and `apps/api` actually running
-- [ ] Reconcile diverged `main` branch (still has the earlier merge-conflict-marker
-      README issue, and hasn't received the work merged into `dev` yet)
-- [ ] Visually confirm `/ui-test` renders with correct design tokens, then delete it
+- [x] Merge PR #3 (`feature/wire-web-to-api` → `dev`)
+- [x] Resolve `db.sqlite3` tracked-in-git issue
+- [x] Fill in real CI jobs in `ci.yml` — lint/typecheck/build/test for `apps/web`,
+      ruff/pytest/migration-check for `apps/api`, plus advisory dependency audits
+      (PR #6)
+- [x] Reconcile diverged `main` branch (merged via PR #27; `main` now tracks `dev`)
+- [x] Remove `/ui-test` scratch page (PR #24)
 
-**Decisions to lock in before Phase 2 (TDD §9):**
-- [ ] PostgreSQL vs. MySQL — recommended: PostgreSQL, for RLS support. Needs final
-      sign-off before more models get written, since RLS policy design depends on it.
-- [ ] Confirm the 4 untracked tickets from the frontend migration plan get numbered
-      and filed: community endpoint-split + vote dedupe, hotline-CRUD auth fix,
-      score-aggregation service extraction, GAD-7 scoring duplication fix
-- [ ] SECURITY.md — deferred, needs a real reporting-contact email decided
-      before launch (GitHub's private vulnerability reporting requires
-      GitHub Advanced Security, a paid feature we're not using for a private
-      repo at this stage)
+**Decisions locked in:**
+- [x] PostgreSQL — already the operating default (TDD §4.4's recommendation is
+      what's actually implemented: `psycopg`, `DATABASE_URL`-driven config,
+      RDS-shaped settings). No formal MySQL counter-proposal ever came up: treat
+      this as settled unless someone actively raises it.
+- [x] The 4 untracked tickets filed as GitHub issues: community endpoint-split +
+      vote dedupe (#37), hotline-CRUD auth fix (#38), score-aggregation service
+      extraction (#39), GAD-7 scoring duplication fix (#40)
+- [x] SECURITY.md — deferred (see below), tracked rather than forgotten
+
+**Still open, not blocking Phase 2:**
+- [ ] SECURITY.md — needs a real reporting-contact email decided before launch
+      (GitHub's private vulnerability reporting requires GitHub Advanced Security,
+      a paid feature we're not using for a private repo at this stage)
+- [ ] `Django` (5.1.6) and `djangorestframework` (3.15.2) have real known CVEs —
+      Dependabot's major-bump PR for Django was closed as a known-breaking bump
+      rather than merged (see `.github/workflows/dependabot-automerge.yml`). Worth
+      a dedicated, deliberately-tested upgrade PR, not a drive-by bump.
 
 ---
 
@@ -57,7 +64,7 @@ questions, which several phases below depend on).
 Pick these first — they don't wait on anything else and build momentum/patterns
 for the harder pages later.
 
-- [ ] Mood Tracker (`/mood`) — REDESIGN, already the cleanest existing view
+- [x] Mood Tracker (`/mood`) — REDESIGN, already the cleanest existing view (PR #35)
 - [ ] Journal (`/journal`) — REDESIGN
 - [ ] To-do list (`/tools/todo`) — PORT (needs the missing-auth fix on `update_task`
       landed in the API first)
