@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.screening",
     "apps.mood_tracker",
     "apps.journal",
+    "apps.tasks",
     "apps.coping_techniques",
     "apps.chat",
     "apps.community",

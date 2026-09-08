@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/v2/', include('apps.mood_tracker.urls')),
     path('api/v2/', include('apps.accounts.urls')),
     path('api/v2/', include('apps.journal.urls')),
+    path('api/v2/', include('apps.tasks.urls')),
 ]
