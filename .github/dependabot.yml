@@ -15,6 +15,15 @@ updates:
       npm-dev-dependencies:
         dependency-type: "development"
         update-types: ["minor", "patch"]
+    ignore:
+      # Both broke CI as routine-looking bumps (Tailwind v4 moved its
+      # PostCSS plugin to a separate package; eslint-config-next 16 needs a
+      # newer ESLint than we're pinned to). Real migrations, not patches —
+      # revisit deliberately rather than letting Dependabot reopen these.
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-config-next"
+        update-types: ["version-update:semver-major"]
 
   # apps/api — requirements/{base,dev,prod}.txt
   - package-ecosystem: "pip"
