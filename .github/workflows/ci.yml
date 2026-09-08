@@ -2,6 +2,7 @@ name: CI
 
 # Pipeline skeleton per TDD.MD §7 — test/lint on every PR, build+deploy on merge to main.
 # Actual build/deploy steps are filled in once infra/ is provisioned.
+# no-op: trigger CI run
 
 on:
   pull_request:
