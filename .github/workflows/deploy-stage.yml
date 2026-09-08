@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: stage # can require reviewers in GitHub Environment settings if desired
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials (OIDC, no stored keys)
         uses: aws-actions/configure-aws-credentials@v4

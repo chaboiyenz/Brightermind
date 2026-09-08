@@ -34,7 +34,7 @@ jobs:
     # reviewers under Settings > Environments so this job pauses for approval.
     environment: main
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials (OIDC, no stored keys)
         uses: aws-actions/configure-aws-credentials@v4
