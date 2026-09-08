@@ -10,6 +10,14 @@ export {
 } from "./mood";
 export { devLogin, type DevLoginInput, type DevLoginResult } from "./auth";
 export {
+  createJournalEntry,
+  deleteJournalEntry,
+  fetchJournalEntries,
+  updateJournalEntry,
+  type JournalEntry,
+  type JournalEntryInput,
+} from "./journal";
+export {
   createTask,
   deleteTask,
   fetchTasks,
