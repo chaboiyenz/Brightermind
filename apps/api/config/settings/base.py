@@ -104,6 +104,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS — web/mobile clients are separate origins from the API (TDD §3).
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+# Required for session-cookie + CSRF-cookie auth to work cross-origin
+# (apps/web on :3000, apps/api on :8000) — off by default, only meaningful
+# once CORS_ALLOWED_ORIGINS is a real, non-wildcard list (it is, above).
+CORS_ALLOW_CREDENTIALS = env.bool("CORS_ALLOW_CREDENTIALS", default=False)
+
+# Django's CSRF protection checks the Origin header against this list
+# separately from the token itself, for any cross-origin unsafe request —
+# needed for apps/web (a different origin/port) to POST/PATCH/DELETE here.
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
