@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev # maps to a GitHub Environment with its own secrets/protection rules
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials (OIDC, no stored keys)
         uses: aws-actions/configure-aws-credentials@v6
