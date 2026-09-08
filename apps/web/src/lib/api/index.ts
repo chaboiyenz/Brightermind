@@ -9,3 +9,13 @@ export {
   type MoodValue,
 } from "./mood";
 export { devLogin, type DevLoginInput, type DevLoginResult } from "./auth";
+export {
+  createTask,
+  deleteTask,
+  fetchTasks,
+  toggleTask,
+  type CreateTaskInput,
+  type Priority,
+  type Task,
+  type TaskCategory,
+} from "./tasks";
