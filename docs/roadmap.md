@@ -1,6 +1,6 @@
 # BrighterMind v2 — Chronological Roadmap
 
-Last updated: [fill in date]. Check items off as they land; this is a living
+Last updated: 2026-09-09. Check items off as they land; this is a living
 document, not a fixed spec — update it as decisions get made (see TDD §9 open
 questions, which several phases below depend on).
 
@@ -65,24 +65,29 @@ Pick these first — they don't wait on anything else and build momentum/pattern
 for the harder pages later.
 
 - [x] Mood Tracker (`/mood`) — REDESIGN, already the cleanest existing view (PR #35)
-- [ ] Journal (`/journal`) — REDESIGN
-- [ ] To-do list (`/tools/todo`) — PORT (needs the missing-auth fix on `update_task`
-      landed in the API first)
-- [ ] Home / About (`/`, `/about`) — PORT, static/ISR content
+- [x] Journal (`/journal`) — REDESIGN (PR #42)
+- [x] To-do list (`/tools/todo`) — PORT, built fresh with proper auth from the start
+      rather than porting v1's missing-auth bug (PR #43)
+- [x] Home / About (`/`, `/about`) — PORT, static/ISR content with a fallback path
+      for API-unreachable builds (PR #44)
 
 ---
 
-## Phase 3 — Auth, once Ticket 2's remaining pieces land
+## Phase 3 — Auth (DONE, PR #45)
 
-The role field exists now, but permission classes and the captcha flow still need
-building.
-
-- [ ] Login / Signup / Psychologist signup (`/login`, `/signup`, `/signup/psychologist`)
-- [ ] Headless captcha flow (challenge id + image → submit with answer)
-- [ ] Reusable DRF permission classes (`IsStudent`, `IsPsychologist`, `IsAdmin`) built
-      against the role field
-- [ ] `RoleGate`/`RoleProvider` on the frontend wired to a real `/auth/me/`-style
+- [x] Login / Signup / Psychologist signup (`/login`, `/signup`, `/signup/psychologist`)
+- [x] Reusable DRF permission classes (`IsStudent`, `IsPsychologist`, `IsAdmin`) built
+      against the role field, unit tested
+- [x] `RoleGate`/`RoleProvider` on the frontend wired to the real `/auth/me/`
       endpoint, replacing the mocked role from Phase 0
+- [x] Architecture decision: switched from session cookies to DRF
+      `TokenAuthentication` — this also genuinely fixed the cross-origin SSR gap
+      documented through Phase 2 (verified: authenticated data now actually
+      renders server-side, not just client-side after hydration)
+
+**Decided:**
+- [x] Headless captcha — explicitly **skipped for now**, to revisit as its own
+      ticket before real launch. Login/signup ship without it.
 
 ---
 
