@@ -27,3 +27,4 @@ export {
   type Task,
   type TaskCategory,
 } from "./tasks";
+export { fetchContentBlock, type ContentBlock } from "./content";
