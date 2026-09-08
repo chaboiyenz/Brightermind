@@ -1,0 +1,45 @@
+name: Deploy — dev
+
+on:
+  push:
+    branches: [dev]
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+permissions:
+  id-token: write # required for OIDC -> AWS role assumption
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & deploy to dev
+    runs-on: ubuntu-latest
+    environment: dev # maps to a GitHub Environment with its own secrets/protection rules
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials (OIDC, no stored keys)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & push API image
+        run: |
+          docker build -t $ECR_REGISTRY/brightermind-api:dev-${{ github.sha }} apps/api
+          docker push $ECR_REGISTRY/brightermind-api:dev-${{ github.sha }}
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+
+      # TODO: replace with actual App Runner / ECS deploy step once infra/ is provisioned
+      - name: Deploy to App Runner (dev)
+        run: echo "TODO — deploy image to dev App Runner service"
+
+      - name: Build & publish mobile preview (EAS)
+        run: echo "TODO — trigger EAS Build for dev profile once Expo project exists"

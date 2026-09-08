@@ -1,0 +1,7 @@
+-r base.txt
+
+# Production ASGI server + Redis-backed channel layer for Django Channels
+# (dev/CI use the in-memory channel layer instead — see config/settings/dev.py).
+gunicorn==23.0.0
+uvicorn[standard]==0.34.0
+channels-redis==4.3.0
