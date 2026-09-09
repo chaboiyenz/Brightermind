@@ -37,6 +37,10 @@ export function JournalEditor({ entry, onDone }: JournalEditorProps) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
+  // NOTE: not mocked — this still calls the real API even under
+  // NEXT_PUBLIC_MOCK_MODE=true (out of scope for the mock-mode retrofit,
+  // which only covered the initial/populated list view). Flagging per
+  // ground rule 3 rather than silently mocking further.
   const mutation = useMutation({
     mutationFn: () =>
       entry

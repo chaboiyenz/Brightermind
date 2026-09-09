@@ -53,11 +53,17 @@ decide one of:
 - **(b)** Retrofit those 4 to also support a static/mock mode (e.g. behind an
   env flag), so the whole prototype can be demoed with zero backend running.
 
-**Decided: (b).** Retrofit is in progress but not complete — `/` has a
-mock-mode branch (`isMockMode()` short-circuits to static fallback content,
-see PR #53), but `/mood`, `/journal`, `/tools/todo`, and `/about` do not yet
-support mock mode and still require the real API to be running. Do not treat
-this decision as fully implemented until all four are retrofitted.
+**Decided: (b) — now fully implemented.** `/` (PR #53), and `/mood`,
+`/journal`, `/tools/todo`, and `/about` (mock-mode retrofit PR) all support
+`NEXT_PUBLIC_MOCK_MODE`, using the same `isMockMode()` pattern: real fetch
+when mock mode is off, static fallback data when it's on or when the real
+fetch errors. The whole prototype is now demoable with zero backend running.
+One caveat, flagged rather than silently built around: create/edit/delete
+actions on those four pages (adding a task, saving a journal entry, logging
+a mood entry, deleting a task or entry) still call the real API even under
+mock mode — only the initial/populated view and To-do's toggle interaction
+were retrofitted. This is the last remaining piece if full CRUD mocking is
+wanted later.
 
 ---
 
@@ -83,9 +89,9 @@ a real API.
 
 ## Prototype Phase B — Profile, directory, dashboards
 
-- [ ] Profile + score summary (`/profile`) — static `ModuleScores`, real
+- [x] Profile + score summary (`/profile`) — static `ModuleScores`, real
       `ScoreRing` rendering (no need to wait on the real score-aggregation
-      service for a mocked view) — **not built yet, next unblocked item**
+      service for a mocked view) — PR #54
 - [x] Psychologist directory (`/psychologists`) — static list of psychologists
 - [x] Psychologist dashboard (`/dashboard`) — static inbox, availability
       toggle works locally (client state only, no persistence)
@@ -100,20 +106,20 @@ a real API.
   the header), `FeatureGrid` (static feature highlight cards), and
   `homeContent.ts` (static fallback copy + the still-placeholder crisis
   hotline number). `/` now has a real-API-with-mock-fallback pattern via
-  `isMockMode()` — the only page with that pattern so far (see the open
-  decision above).
+  `isMockMode()` — since retrofitted onto `/mood`, `/journal`, `/tools/todo`,
+  and `/about` too (see the open decision above, now resolved).
 
 ## Prototype Phase C — Social & communication
 
-- [ ] Community feed (`/community`) — static posts/comments, vote button
-      works locally (optimistic UI only, no real dedupe/persistence)
-- [ ] Messaging (`/messages/[partnerId]`) — static conversation thread, no
+- [x] Community feed (`/community`) — static posts/comments, vote button
+      works locally (optimistic UI only, no real dedupe/persistence) — PR #55
+- [x] Messaging (`/messages/[partnerId]`) — static conversation thread, no
       real-time behavior (this is the one area where "no polling/websocket"
       is actually fine for a prototype, since it was an open architecture
-      question anyway)
-- [ ] Video call (`/call/[sessionId]`) — static "call" UI shell only (camera
+      question anyway) — PR #56
+- [x] Video call (`/call/[sessionId]`) — static "call" UI shell only (camera
       preview if easy, no real Chime/Twilio integration) — just enough to
-      review the surrounding chrome/UX, not a working call
+      review the surrounding chrome/UX, not a working call — PR #56
 
 ## Prototype Phase D — Review
 

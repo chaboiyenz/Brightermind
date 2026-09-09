@@ -1,28 +1,23 @@
 import { ContentBlockSection } from "@/components/ContentBlockSection";
 import { fetchContentBlock, type ContentBlock } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
+import { ABOUT_FALLBACK } from "@/lib/mock/contentBlocks";
 
-// Matches the seed data in apps/api/apps/content/migrations/0002_seed_home_about.py —
-// used only if the ISR fetch below fails (API unreachable at build/revalidate
-// time), per the migration plan's "falls back to last-known-good content" note.
-const FALLBACK: ContentBlock = {
-  id: 0,
-  slug: "about",
-  title: "About BrighterMind",
-  content:
-    "BrighterMind is a mental health support platform built for students. " +
-    "It provides screening tools, mood tracking, coping technique modules, " +
-    "and a way to connect with registered psychologists. It is a screening " +
-    "and support tool, not a diagnostic one.",
-  created_at: "",
-};
+// Mock-mode retrofit (decision (b), docs/prototype-roadmap.md) — matches
+// home page.tsx's loadHeroBlock exactly: static fallback content when mock
+// mode is on, real ISR fetch otherwise, falling back to the same static
+// content if that fetch errors (API unreachable at build/revalidate time).
+async function loadAboutBlock(): Promise<ContentBlock> {
+  if (isMockMode()) return ABOUT_FALLBACK;
+  try {
+    return await fetchContentBlock("about");
+  } catch {
+    return ABOUT_FALLBACK;
+  }
+}
 
 export default async function AboutPage() {
-  let block: ContentBlock;
-  try {
-    block = await fetchContentBlock("about");
-  } catch {
-    block = FALLBACK;
-  }
+  const block = await loadAboutBlock();
 
   return (
     <main className="min-h-screen bg-stone-50">
