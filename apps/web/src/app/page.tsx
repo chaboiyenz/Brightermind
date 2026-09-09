@@ -1,31 +1,36 @@
-import { ContentBlockSection } from "@/components/ContentBlockSection";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { CrisisBanner } from "@/components/home/CrisisBanner";
+import { HeroSection } from "@/components/home/HeroSection";
+import { FeatureGrid } from "@/components/home/FeatureGrid";
+import { HOME_FALLBACK } from "@/components/home/homeContent";
 import { fetchContentBlock, type ContentBlock } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
 
-// Matches the seed data in apps/api/apps/content/migrations/0002_seed_home_about.py —
-// used only if the ISR fetch below fails (API unreachable at build/revalidate
-// time), per the migration plan's "falls back to last-known-good content" note.
-const FALLBACK: ContentBlock = {
-  id: 0,
-  slug: "home",
-  title: "BrighterMind",
-  content:
-    "Mental health support for students — screening tools, mood tracking, " +
-    "coping techniques, and support from registered psychologists, all in " +
-    "one place.",
-  created_at: "",
-};
+// The headline/subhead still come from the CMS `home` block when the API is
+// reachable (migration plan module 17), falling back to the seed copy
+// otherwise. Everything else on the page is static per the prototype pivot.
+async function loadHeroBlock(): Promise<ContentBlock> {
+  if (isMockMode()) return HOME_FALLBACK;
+  try {
+    return await fetchContentBlock("home");
+  } catch {
+    return HOME_FALLBACK;
+  }
+}
 
 export default async function HomePage() {
-  let block: ContentBlock;
-  try {
-    block = await fetchContentBlock("home");
-  } catch {
-    block = FALLBACK;
-  }
+  const block = await loadHeroBlock();
 
   return (
-    <main className="min-h-screen bg-stone-50">
-      <ContentBlockSection block={block} />
-    </main>
+    <div className="flex min-h-screen flex-col bg-stone-50">
+      <SiteHeader />
+      <CrisisBanner />
+      <main className="flex-1">
+        <HeroSection block={block} />
+        <FeatureGrid />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
