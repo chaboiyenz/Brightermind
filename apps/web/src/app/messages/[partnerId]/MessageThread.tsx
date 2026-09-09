@@ -47,7 +47,7 @@ function MessageBubble({
           className={cn(
             "rounded-2xl px-4 py-2 text-sm",
             isOwn
-              ? "rounded-br-sm bg-brand-600 text-stone-25"
+              ? "rounded-br-sm bg-brand-600 text-on-brand"
               : "rounded-bl-sm border border-clay-200 bg-clay-50 text-stone-800"
           )}
         >

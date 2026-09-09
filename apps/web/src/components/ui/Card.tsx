@@ -1,11 +1,13 @@
 import { type HTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
 
+// docs/DESIGN.md "Wellness Cards": 20px radius, hairline stone border, soft
+// slate-tinted shadow. stone-25 is the card surface in both themes.
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-stone-200 bg-stone-25 p-5 shadow-sm",
+        "rounded-xl border border-stone-200 bg-stone-25 p-6 shadow-soft",
         className
       )}
       {...props}
@@ -19,7 +21,10 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-base font-medium text-stone-900", className)} {...props} />
+    <h3
+      className={cn("font-display text-base font-medium text-stone-900", className)}
+      {...props}
+    />
   );
 }
 

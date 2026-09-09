@@ -8,9 +8,10 @@ export interface ScoreRingProps {
 /**
  * Circular progress ring. Used on the Profile page's ScoreSummaryPanel (one
  * ring per module) and reused as-is by the mini-games module — see migration
- * plan modules 2 and 8. Deliberately uses brand teal, not a leaderboard-style
- * bright color scale, per the profile page's REDESIGN notes ("shouldn't feel
- * like a game leaderboard").
+ * plan modules 2 and 8. Deliberately uses the brand green, not a
+ * leaderboard-style bright color scale, per the profile page's REDESIGN notes
+ * ("shouldn't feel like a game leaderboard"). Colors come from theme tokens
+ * so the ring reads correctly in both light and dark mode.
  */
 export function ScoreRing({ value, label, size = 72, className }: ScoreRingProps) {
   const clamped = Math.max(0, Math.min(100, value));
@@ -27,7 +28,7 @@ export function ScoreRing({ value, label, size = 72, className }: ScoreRingProps
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E4E1D9" // stone-200
+          className="stroke-stone-200"
           strokeWidth={stroke}
         />
         <circle
@@ -35,7 +36,7 @@ export function ScoreRing({ value, label, size = 72, className }: ScoreRingProps
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#2F6F62" // brand-600
+          className="stroke-brand-600"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -48,7 +49,7 @@ export function ScoreRing({ value, label, size = 72, className }: ScoreRingProps
           y="50%"
           textAnchor="middle"
           dominantBaseline="central"
-          className="fill-stone-900 text-sm font-medium"
+          className="fill-stone-900 font-display text-sm font-medium"
         >
           {clamped}
         </text>

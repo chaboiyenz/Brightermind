@@ -13,6 +13,9 @@ type ConnectionState = "connecting" | "connected" | "error";
 // to demo the chrome, and the camera feed is a static placeholder graphic,
 // never a real getUserMedia() request (decision: avoid fake functionality
 // and permission friction in a prototype).
+//
+// The page wraps this in `.theme-dark` (globals.css), so stone-50/100 are the
+// dark room and stone-900 is light text in BOTH site themes.
 export function CallRoom({ partnerName }: { partnerName: string }) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const [isMuted, setIsMuted] = useState(false);
@@ -38,15 +41,15 @@ export function CallRoom({ partnerName }: { partnerName: string }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-lg bg-stone-800 m-4">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-lg bg-stone-100 m-4">
         {/* Static placeholder graphic standing in for the real video feed. */}
-        <div className="flex flex-col items-center gap-2 text-stone-300">
+        <div className="flex flex-col items-center gap-2 text-stone-600">
           <VideoOff className="h-12 w-12" aria-hidden="true" />
           <p className="text-sm">Camera preview placeholder</p>
         </div>
 
         {connectionState !== "connected" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-stone-900/80 text-stone-25">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-stone-50/80 text-stone-900">
             {connectionState === "connecting" && (
               <>
                 <span
@@ -57,7 +60,7 @@ export function CallRoom({ partnerName }: { partnerName: string }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-stone-25 hover:bg-stone-25/10"
+                  className="text-stone-900 hover:bg-stone-900/10"
                   onClick={() => setConnectionState("error")}
                 >
                   Simulate connection issue
