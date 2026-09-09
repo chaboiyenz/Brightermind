@@ -93,6 +93,12 @@ for the harder pages later.
 
 ## Phase 4 — Medium complexity pages, each with one clear prerequisite
 
+> **Superseded as of the prototype pivot.** Active work now follows
+> [`docs/prototype-roadmap.md`](./prototype-roadmap.md) instead — real
+> backend/auth for these pages is deferred until that prototype track's
+> Phase D review decides whether to resume this plan as-is. Left unedited
+> below as the eventual full-implementation reference.
+
 - [ ] GAD-7 screening (`/screening/gad7`) — fix client/server scoring duplication in
       the API first, then build the paginated one-question-per-screen flow
 - [ ] Exercise & Yoga (`/coping/exercise`, `/coping/yoga`) — fix missing auth on
