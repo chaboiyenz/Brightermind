@@ -1,6 +1,6 @@
 # BrighterMind v2 — Chronological Roadmap
 
-Last updated: [fill in date]. Check items off as they land; this is a living
+Last updated: 2026-09-09. Check items off as they land; this is a living
 document, not a fixed spec — update it as decisions get made (see TDD §9 open
 questions, which several phases below depend on).
 
@@ -28,27 +28,34 @@ questions, which several phases below depend on).
 
 ---
 
-## Phase 1 — Close out loose ends (IN PROGRESS — do this before new feature work)
+## Phase 1 — Close out loose ends (DONE)
 
-- [ ] Merge PR #3 (`feature/wire-web-to-api` → `dev`)
-- [ ] Resolve `db.sqlite3` tracked-in-git issue — inspect contents, `git rm --cached`,
-      decide if history needs scrubbing based on what's actually in it
-- [ ] Fill in real CI jobs in `ci.yml` (currently `echo "TODO"` placeholders) —
-      lint/typecheck/test for both `apps/web` and `apps/api` actually running
-- [ ] Reconcile diverged `main` branch (still has the earlier merge-conflict-marker
-      README issue, and hasn't received the work merged into `dev` yet)
-- [ ] Visually confirm `/ui-test` renders with correct design tokens, then delete it
+- [x] Merge PR #3 (`feature/wire-web-to-api` → `dev`)
+- [x] Resolve `db.sqlite3` tracked-in-git issue
+- [x] Fill in real CI jobs in `ci.yml` — lint/typecheck/build/test for `apps/web`,
+      ruff/pytest/migration-check for `apps/api`, plus advisory dependency audits
+      (PR #6)
+- [x] Reconcile diverged `main` branch (merged via PR #27; `main` now tracks `dev`)
+- [x] Remove `/ui-test` scratch page (PR #24)
 
-**Decisions to lock in before Phase 2 (TDD §9):**
-- [ ] PostgreSQL vs. MySQL — recommended: PostgreSQL, for RLS support. Needs final
-      sign-off before more models get written, since RLS policy design depends on it.
-- [ ] Confirm the 4 untracked tickets from the frontend migration plan get numbered
-      and filed: community endpoint-split + vote dedupe, hotline-CRUD auth fix,
-      score-aggregation service extraction, GAD-7 scoring duplication fix
-- [ ] SECURITY.md — deferred, needs a real reporting-contact email decided
-      before launch (GitHub's private vulnerability reporting requires
-      GitHub Advanced Security, a paid feature we're not using for a private
-      repo at this stage)
+**Decisions locked in:**
+- [x] PostgreSQL — already the operating default (TDD §4.4's recommendation is
+      what's actually implemented: `psycopg`, `DATABASE_URL`-driven config,
+      RDS-shaped settings). No formal MySQL counter-proposal ever came up: treat
+      this as settled unless someone actively raises it.
+- [x] The 4 untracked tickets filed as GitHub issues: community endpoint-split +
+      vote dedupe (#37), hotline-CRUD auth fix (#38), score-aggregation service
+      extraction (#39), GAD-7 scoring duplication fix (#40)
+- [x] SECURITY.md — deferred (see below), tracked rather than forgotten
+
+**Still open, not blocking Phase 2:**
+- [ ] SECURITY.md — needs a real reporting-contact email decided before launch
+      (GitHub's private vulnerability reporting requires GitHub Advanced Security,
+      a paid feature we're not using for a private repo at this stage)
+- [ ] `Django` (5.1.6) and `djangorestframework` (3.15.2) have real known CVEs —
+      Dependabot's major-bump PR for Django was closed as a known-breaking bump
+      rather than merged (see `.github/workflows/dependabot-automerge.yml`). Worth
+      a dedicated, deliberately-tested upgrade PR, not a drive-by bump.
 
 ---
 
@@ -57,29 +64,40 @@ questions, which several phases below depend on).
 Pick these first — they don't wait on anything else and build momentum/patterns
 for the harder pages later.
 
-- [ ] Mood Tracker (`/mood`) — REDESIGN, already the cleanest existing view
-- [ ] Journal (`/journal`) — REDESIGN
-- [ ] To-do list (`/tools/todo`) — PORT (needs the missing-auth fix on `update_task`
-      landed in the API first)
-- [ ] Home / About (`/`, `/about`) — PORT, static/ISR content
+- [x] Mood Tracker (`/mood`) — REDESIGN, already the cleanest existing view (PR #35)
+- [x] Journal (`/journal`) — REDESIGN (PR #42)
+- [x] To-do list (`/tools/todo`) — PORT, built fresh with proper auth from the start
+      rather than porting v1's missing-auth bug (PR #43)
+- [x] Home / About (`/`, `/about`) — PORT, static/ISR content with a fallback path
+      for API-unreachable builds (PR #44)
 
 ---
 
-## Phase 3 — Auth, once Ticket 2's remaining pieces land
+## Phase 3 — Auth (DONE, PR #45)
 
-The role field exists now, but permission classes and the captcha flow still need
-building.
-
-- [ ] Login / Signup / Psychologist signup (`/login`, `/signup`, `/signup/psychologist`)
-- [ ] Headless captcha flow (challenge id + image → submit with answer)
-- [ ] Reusable DRF permission classes (`IsStudent`, `IsPsychologist`, `IsAdmin`) built
-      against the role field
-- [ ] `RoleGate`/`RoleProvider` on the frontend wired to a real `/auth/me/`-style
+- [x] Login / Signup / Psychologist signup (`/login`, `/signup`, `/signup/psychologist`)
+- [x] Reusable DRF permission classes (`IsStudent`, `IsPsychologist`, `IsAdmin`) built
+      against the role field, unit tested
+- [x] `RoleGate`/`RoleProvider` on the frontend wired to the real `/auth/me/`
       endpoint, replacing the mocked role from Phase 0
+- [x] Architecture decision: switched from session cookies to DRF
+      `TokenAuthentication` — this also genuinely fixed the cross-origin SSR gap
+      documented through Phase 2 (verified: authenticated data now actually
+      renders server-side, not just client-side after hydration)
+
+**Decided:**
+- [x] Headless captcha — explicitly **skipped for now**, to revisit as its own
+      ticket before real launch. Login/signup ship without it.
 
 ---
 
 ## Phase 4 — Medium complexity pages, each with one clear prerequisite
+
+> **Superseded as of the prototype pivot.** Active work now follows
+> [`docs/prototype-roadmap.md`](./prototype-roadmap.md) instead — real
+> backend/auth for these pages is deferred until that prototype track's
+> Phase D review decides whether to resume this plan as-is. Left unedited
+> below as the eventual full-implementation reference.
 
 - [ ] GAD-7 screening (`/screening/gad7`) — fix client/server scoring duplication in
       the API first, then build the paginated one-question-per-screen flow

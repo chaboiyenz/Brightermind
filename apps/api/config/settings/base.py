@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party
     "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
     "channels",
     "drf_spectacular",
@@ -39,6 +40,9 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.screening",
     "apps.mood_tracker",
+    "apps.journal",
+    "apps.tasks",
+    "apps.content",
     "apps.coping_techniques",
     "apps.chat",
     "apps.community",
@@ -104,10 +108,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS — web/mobile clients are separate origins from the API (TDD §3).
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+# Token auth (below) sends the token as an Authorization header, not a
+# cookie, so no cookies ever cross the origin boundary for API calls —
+# CORS_ALLOW_CREDENTIALS/CSRF_TRUSTED_ORIGINS were needed for the old
+# dev-only session-cookie login (removed in Phase 3) and are not needed
+# here. Session auth is still what powers /admin/'s own login, which is
+# same-origin and unaffected by this.
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
