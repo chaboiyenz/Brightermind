@@ -1,10 +1,11 @@
 // Single source of truth for site-wide navigation targets, shared by
 // SiteHeader and SiteFooter so the two never drift apart.
 //
-// Routes follow docs/frontend-migration-plan.md's master table. Some targets
-// (/coping/*, /community, /resources/hotlines) are planned prototype routes
-// that may not exist yet on this branch — they resolve as pages land under
-// .references/roadmap/prototype-roadmap.MD Phases A–C.
+// Routes follow docs/frontend-migration-plan.md's master table.
+//
+// "Community" is intentionally omitted from PRIMARY_NAV — it's a genuinely
+// unbuilt Phase C route (see docs/prototype-roadmap.md) and a nav link to a
+// missing page is worse than no link. Re-add it once /community exists.
 
 export interface SiteLink {
   readonly label: string;
@@ -14,7 +15,6 @@ export interface SiteLink {
 export const PRIMARY_NAV: readonly SiteLink[] = [
   { label: "Screening", href: "/screening/gad7" },
   { label: "Coping Techniques", href: "/coping/exercise" },
-  { label: "Community", href: "/community" },
 ];
 
 export const LOGIN_LINK: SiteLink = { label: "Login", href: "/login" };
