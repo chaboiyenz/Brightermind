@@ -15,9 +15,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "BrighterMind",
   description: "Mental health support platform",
-  icons: {
-    icon: "/logo/logo.png",
-  },
+  // No explicit `icons` override — apps/web/src/app/icon.png is picked up
+  // automatically by Next.js's file-convention metadata (an explicit
+  // `icons` entry here takes precedence over that and was pointing at
+  // public/logo/logo.png, a file that no longer exists — hence the 404).
 };
 
 export default function RootLayout({
