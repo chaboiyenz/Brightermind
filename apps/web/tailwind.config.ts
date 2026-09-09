@@ -75,6 +75,25 @@ const config: Config = {
         md: "8px", // buttons
         lg: "14px", // cards, modals
       },
+      // Backs the `animate-in` / `animate-out` utilities that Disclosure and
+      // Toast already reference on Radix `data-[state]` attributes. Without
+      // these the classes were no-ops and collapsibles snapped open — the
+      // migration plan's REDESIGN notes (module 10) ask for a soft fade-in on
+      // comment-thread expansion instead. Short and gentle on purpose.
+      keyframes: {
+        in: {
+          from: { opacity: "0", transform: "translateY(-4px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        out: {
+          from: { opacity: "1", transform: "translateY(0)" },
+          to: { opacity: "0", transform: "translateY(-4px)" },
+        },
+      },
+      animation: {
+        in: "in 220ms ease-out",
+        out: "out 160ms ease-in",
+      },
     },
   },
   plugins: [],
