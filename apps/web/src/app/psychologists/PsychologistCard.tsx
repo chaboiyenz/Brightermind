@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Avatar, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import type { PsychologistAvailability, PsychologistSummary } from "@/lib/mock/psychologists";
 
@@ -33,12 +34,12 @@ export function PsychologistCard({ psychologist }: { psychologist: PsychologistS
       </CardHeader>
       <CardContent className="mt-auto flex items-center justify-between gap-3">
         <p className="text-xs text-stone-600">Registered psychologist</p>
-        <a
+        <Link
           href={`/messages/${psychologist.id}`}
           className="text-sm font-medium text-brand-600 hover:text-brand-700"
         >
           Send a message
-        </a>
+        </Link>
       </CardContent>
     </Card>
   );

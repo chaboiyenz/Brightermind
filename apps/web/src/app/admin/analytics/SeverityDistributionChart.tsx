@@ -64,7 +64,7 @@ export function SeverityDistributionChart({ severityCounts }: SeverityDistributi
       <svg
         viewBox={`0 0 ${CHART.width} ${CHART.height}`}
         className="w-full max-w-xl"
-        role="img"
+        role="group"
         aria-label={`Screening severity distribution across ${total} students`}
       >
         <line
@@ -91,6 +91,7 @@ export function SeverityDistributionChart({ severityCounts }: SeverityDistributi
               onFocus={() => setHovered(key)}
               onBlur={() => setHovered(null)}
               tabIndex={0}
+              role="img"
               aria-label={`${SEVERITY_LABEL[key]}: ${count} students, ${share}%`}
               className="outline-none"
             >

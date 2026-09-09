@@ -21,8 +21,10 @@ function SeverityCell({ severity }: { severity: InboxRow["severity"] }) {
 
 // Server component (module 12): renders whatever rows it is handed. Under the
 // prototype those come from getMockInbox(); later, from
-// GET /api/v2/psychologists/me/inbox/. Row-level "open" links point at the
-// Phase C messaging route so the layout can be reviewed with a real CTA.
+// GET /api/v2/psychologists/me/inbox/. No per-row "open" CTA yet: module 13's
+// route is /messages/[partnerId], and module 12's InboxRow carries a messageId
+// but no sender/partner id, so there is nothing correct to link to until that
+// interface gains one (flagged in the Phase B PR).
 export function InboxTable({ rows }: { rows: readonly InboxRow[] }) {
   if (rows.length === 0) {
     return (
@@ -40,9 +42,6 @@ export function InboxTable({ rows }: { rows: readonly InboxRow[] }) {
           <TableHeaderCell>From</TableHeaderCell>
           <TableHeaderCell>Latest screening</TableHeaderCell>
           <TableHeaderCell>Status</TableHeaderCell>
-          <TableHeaderCell className="text-right">
-            <span className="sr-only">Actions</span>
-          </TableHeaderCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -54,14 +53,6 @@ export function InboxTable({ rows }: { rows: readonly InboxRow[] }) {
             </TableCell>
             <TableCell>
               <MessageStatusBadge status={row.status} />
-            </TableCell>
-            <TableCell className="text-right">
-              <a
-                href={`/messages/${row.messageId}`}
-                className="text-sm font-medium text-brand-600 hover:text-brand-700"
-              >
-                Open
-              </a>
             </TableCell>
           </TableRow>
         ))}
