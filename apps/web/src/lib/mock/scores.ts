@@ -32,3 +32,14 @@ export const MODULE_SCORE_LABELS: Record<keyof Omit<ModuleScores, "total">, stri
   mindManagement: "Mind mgmt",
   relaxation: "Relaxation",
 };
+
+// Per-module ceiling used to normalise raw points onto ScoreRing's 0-100
+// scale. Prototype placeholder: the real ceiling belongs to module 2's
+// /scores/ endpoint contract, not the frontend. Shared by the admin patient
+// list and the profile page so both present the same points identically.
+export const MODULE_SCORE_MAX = 25;
+
+export function scoreToPercent(value: number): number {
+  const clamped = Math.max(0, Math.min(MODULE_SCORE_MAX, value));
+  return Math.round((clamped / MODULE_SCORE_MAX) * 100);
+}
