@@ -14,6 +14,10 @@ export function AddTaskForm() {
   const [category, setCategory] = useState<TaskCategory>("personal");
   const queryClient = useQueryClient();
 
+  // NOTE: not mocked — this still calls the real API even under
+  // NEXT_PUBLIC_MOCK_MODE=true (out of scope for the mock-mode retrofit,
+  // which only covered the initial/populated view and TaskList's toggle).
+  // Flagging per ground rule 3 rather than silently mocking further.
   const mutation = useMutation({
     mutationFn: () => createTask({ title, priority, category }),
     onSuccess: () => {

@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Button, Skeleton } from "@/components/ui";
 import { fetchMoodEntries, type MoodEntry } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
+import { getMockMoodEntries } from "@/lib/mock/moodEntries";
 import { MoodDayCell } from "./MoodDayCell";
 import { MoodEntryModal } from "./MoodEntryModal";
 
@@ -32,9 +34,14 @@ export function MoodCalendar({ initialMonth, initialEntries }: MoodCalendarProps
   const [visibleMonth, setVisibleMonth] = useState(initialMonth);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  // Mock-mode retrofit: month navigation re-queries by queryKey, so the
+  // fetch itself (not just the SSR initialData) has to stay mock-aware —
+  // otherwise switching months here would hit the real API even under
+  // NEXT_PUBLIC_MOCK_MODE=true.
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["mood-entries", visibleMonth],
-    queryFn: () => fetchMoodEntries(visibleMonth),
+    queryFn: () =>
+      isMockMode() ? Promise.resolve(getMockMoodEntries(visibleMonth)) : fetchMoodEntries(visibleMonth),
     initialData: visibleMonth === initialMonth ? initialEntries : undefined,
   });
 

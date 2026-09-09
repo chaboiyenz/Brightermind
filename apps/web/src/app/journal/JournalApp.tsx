@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button, ConfirmDialog, useToast } from "@/components/ui";
 import { deleteJournalEntry, fetchJournalEntries, type JournalEntry } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
+import { getMockJournalEntries } from "@/lib/mock/journalEntries";
 import { JournalEditor } from "./JournalEditor";
 import { JournalEntryList } from "./JournalEntryList";
 
@@ -17,12 +19,21 @@ export function JournalApp({ initialEntries }: JournalAppProps) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
+  // Mock-mode retrofit: queryFn (not just SSR initialData) has to stay
+  // mock-aware too, since react-query background-refetches on mount by
+  // default — without this branch that refetch would hit the real API even
+  // under NEXT_PUBLIC_MOCK_MODE=true.
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["journal-entries"],
-    queryFn: () => fetchJournalEntries(),
+    queryFn: () => (isMockMode() ? Promise.resolve(getMockJournalEntries()) : fetchJournalEntries()),
     initialData: initialEntries,
   });
 
+  // NOTE: create/edit/delete still call the real API even in mock mode —
+  // only the initial/populated view was in scope for this retrofit. Flagging
+  // per ground rule 3 rather than silently mocking further: without a
+  // backend running, these actions will surface the existing error toast
+  // below instead of succeeding.
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteJournalEntry(id),
     onSuccess: () => {
