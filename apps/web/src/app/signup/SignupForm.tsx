@@ -5,6 +5,43 @@ import { useRouter } from "next/navigation";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button, FormField, Input } from "@/components/ui";
 import { registerStudent, type RegisterStudentInput } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
+import { useMockRole } from "@/components/MockRoleProvider";
+
+// Mock-mode retrofit (decision (b), docs/prototype-roadmap.md) — this route
+// is specifically the *student* signup, so there's no role to choose (unlike
+// /login): mock mode just sets the role to "student" and moves on. Matches
+// LoginForm's pattern of picking between the two forms below rather than
+// branching mid-component, so real-mode JSX stays untouched.
+export function SignupForm() {
+  if (isMockMode()) return <MockSignupForm />;
+  return <RealSignupForm />;
+}
+
+// No form fields, no real account — purely a role-selection stand-in for
+// "being signed up", reusing MockRoleProvider's role state (useMockRole)
+// rather than a second mock-auth mechanism. Redirects to /mood, matching
+// exactly where a real successful student signup sends the user (see
+// RealSignupForm below).
+function MockSignupForm() {
+  const router = useRouter();
+  const { setRole } = useMockRole();
+
+  function handleContinue() {
+    setRole("student");
+    router.push("/mood");
+  }
+
+  return (
+    <div className="w-full max-w-sm space-y-4">
+      <p className="text-sm text-stone-600">
+        Prototype mode — no backend running. Continuing previews the app as a
+        student; nothing here is actually registered.
+      </p>
+      <Button onClick={handleContinue}>Continue as a student</Button>
+    </div>
+  );
+}
 
 const initialValues: RegisterStudentInput = {
   username: "",
@@ -15,7 +52,8 @@ const initialValues: RegisterStudentInput = {
   password2: "",
 };
 
-export function SignupForm() {
+// Unchanged real-API behavior (Phase 3, PR #45).
+function RealSignupForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [values, setValues] = useState<RegisterStudentInput>(initialValues);
