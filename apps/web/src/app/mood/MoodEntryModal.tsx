@@ -20,6 +20,10 @@ export function MoodEntryModal({ open, onOpenChange, date, monthKey }: MoodEntry
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
+  // NOTE: not mocked — this still calls the real API even under
+  // NEXT_PUBLIC_MOCK_MODE=true (out of scope for the mock-mode retrofit,
+  // which only covered the initial/populated calendar view). Flagging per
+  // ground rule 3 rather than silently mocking further.
   const mutation = useMutation({
     mutationFn: () => createMoodEntry({ date, mood, note: note || undefined }),
     onSuccess: () => {
