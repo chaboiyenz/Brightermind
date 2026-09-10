@@ -34,7 +34,7 @@ function MockLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <p className="text-sm text-stone-600">
         Prototype mode — no backend running. Pick a role to preview the app as
         that user; nothing else here is checked.
@@ -53,7 +53,9 @@ function MockLoginForm() {
           ))}
         </select>
       </FormField>
-      <Button type="submit">Log in</Button>
+      <Button type="submit" className="w-full">
+        Log in
+      </Button>
     </form>
   );
 }
@@ -83,7 +85,7 @@ function RealLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <FormField label="Username" htmlFor="username">
         <Input
           id="username"
@@ -106,7 +108,7 @@ function RealLoginForm() {
           {error}
         </p>
       )}
-      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting} className="w-full">
         Log in
       </Button>
     </form>

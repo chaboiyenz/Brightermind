@@ -81,7 +81,7 @@ function RealSignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <FormField label="Username" htmlFor="username">
         <Input id="username" value={values.username} onChange={update("username")} required />
       </FormField>
@@ -123,7 +123,7 @@ function RealSignupForm() {
           {error}
         </p>
       )}
-      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting} className="w-full">
         Sign up
       </Button>
     </form>
