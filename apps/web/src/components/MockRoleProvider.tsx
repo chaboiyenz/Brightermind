@@ -56,33 +56,7 @@ export function MockRoleProvider({ children }: { children: ReactNode }) {
     <MockRoleContext.Provider value={{ role, setRole: updateRole }}>
       <RoleProvider role={role} isLoading={false}>
         {children}
-        <MockRoleSwitcher role={role} onChange={updateRole} />
       </RoleProvider>
     </MockRoleContext.Provider>
-  );
-}
-
-function MockRoleSwitcher({
-  role,
-  onChange,
-}: {
-  role: Role;
-  onChange: (role: Role) => void;
-}) {
-  return (
-    <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2 rounded-md border border-stone-300 bg-stone-25 px-3 py-2 text-xs shadow-md">
-      <span className="font-medium text-stone-700">Prototype role:</span>
-      <select
-        value={role}
-        onChange={(e) => onChange(e.target.value as Role)}
-        className="rounded-sm border border-stone-300 bg-white px-1.5 py-0.5 text-xs"
-      >
-        {MOCK_ROLES.map((r) => (
-          <option key={r} value={r}>
-            {r}
-          </option>
-        ))}
-      </select>
-    </div>
   );
 }

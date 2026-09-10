@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import { buttonVariants, cn } from "@/components/ui";
 import { LOGIN_LINK, PRIMARY_NAV } from "./siteLinks";
 import { Wordmark } from "./Wordmark";
@@ -28,9 +28,14 @@ export function SiteHeader() {
           ))}
           <Link
             href={LOGIN_LINK.href}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-2")}
+            aria-label={LOGIN_LINK.label}
+            title={LOGIN_LINK.label}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "ml-2 px-2.5"
+            )}
           >
-            {LOGIN_LINK.label}
+            <LogIn className="h-4 w-4" aria-hidden="true" />
           </Link>
         </nav>
 
@@ -72,6 +77,7 @@ export function SiteHeader() {
               className={cn(buttonVariants({ variant: "outline", size: "md" }), "w-full")}
               onClick={() => setIsMenuOpen(false)}
             >
+              <LogIn className="h-4 w-4" aria-hidden="true" />
               {LOGIN_LINK.label}
             </Link>
           </li>

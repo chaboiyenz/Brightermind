@@ -45,28 +45,17 @@ export function HeroSection({ block }: { block: ContentBlock }) {
   );
 }
 
-// Decorative only — soft, low-arousal shapes in the brand/clay/sage palette
-// (see tailwind.config.ts comments on why the palette avoids anything
-// clinical or saturated). Hidden from assistive tech.
+// Decorative only — hidden from assistive tech. Illustration source: v1's
+// asset audit (.references/_asset-audit) — a Freepik stock illustration,
+// carried over as-is. Flagging per ground rule 3: confirm Freepik licensing/
+// attribution requirements are met before this goes anywhere near a real
+// launch, same as the other content flagged throughout the prototype.
 function HeroGraphic() {
   return (
     <div className="mx-auto w-full max-w-sm lg:max-w-none" aria-hidden="true">
-      <svg viewBox="0 0 400 320" className="h-auto w-full" focusable="false">
-        <circle cx="250" cy="150" r="130" className="fill-brand-100" />
-        <circle cx="250" cy="150" r="92" className="fill-brand-200" />
-        <circle cx="250" cy="150" r="54" className="fill-brand-500" />
-        <circle cx="90" cy="230" r="58" className="fill-clay-100" />
-        <circle cx="90" cy="230" r="26" className="fill-clay-400" />
-        <circle cx="120" cy="70" r="38" className="fill-sage-100" />
-        <circle cx="120" cy="70" r="16" className="fill-sage-500" />
-        <path
-          d="M40 290 C 120 250, 200 300, 360 260"
-          className="stroke-brand-300"
-          strokeWidth="6"
-          strokeLinecap="round"
-          fill="none"
-        />
-      </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element -- plain <img>
+          for a public/ SVG; next/image's optimizer doesn't apply to SVGs. */}
+      <img src="/images/home-img.svg" alt="" className="h-auto w-full" />
     </div>
   );
 }

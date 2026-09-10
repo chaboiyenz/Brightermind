@@ -92,7 +92,10 @@ function RealPsychologistSignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-stone-600">
+        Personal info
+      </p>
       <FormField label="Username" htmlFor="username">
         <Input id="username" value={values.username} onChange={update("username")} required />
       </FormField>
@@ -123,6 +126,10 @@ function RealPsychologistSignupForm() {
           required
         />
       </FormField>
+
+      <p className="border-t border-stone-200 pt-4 text-xs font-semibold uppercase tracking-wide text-stone-600">
+        Professional info
+      </p>
       <FormField label="License number" htmlFor="license_number">
         <Input
           id="license_number"
@@ -173,7 +180,7 @@ function RealPsychologistSignupForm() {
           {error}
         </p>
       )}
-      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting} className="w-full">
         Sign up
       </Button>
     </form>
