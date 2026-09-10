@@ -53,7 +53,11 @@ export function SiteChrome({ children }: { children: ReactNode }) {
           <BackButton />
         </div>
       )}
-      {children}
+      {/* flex-1 here, not just on this outer wrapper's min-h-screen — a
+          page's own <main> doesn't reliably carry flex-1 itself (most don't;
+          only home's did), so without this a short page left the footer
+          stranded mid-viewport instead of pinned to the bottom. */}
+      <div className="flex flex-1 flex-col">{children}</div>
       {!auth && <SiteFooter />}
     </div>
   );
