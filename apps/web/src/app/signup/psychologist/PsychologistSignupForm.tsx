@@ -5,6 +5,42 @@ import { useRouter } from "next/navigation";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button, FormField, Input, Textarea } from "@/components/ui";
 import { registerPsychologist, type RegisterPsychologistInput } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
+import { useMockRole } from "@/components/MockRoleProvider";
+
+// Mock-mode retrofit (decision (b), docs/prototype-roadmap.md) — this route
+// is specifically the *psychologist* signup, so mock mode just sets the role
+// to "psychologist" and moves on, same pattern as SignupForm/LoginForm.
+export function PsychologistSignupForm() {
+  if (isMockMode()) return <MockPsychologistSignupForm />;
+  return <RealPsychologistSignupForm />;
+}
+
+// No form fields, no real account, no unapproved-status workflow (that's a
+// real-backend concept) — purely a role-selection stand-in, reusing
+// MockRoleProvider's role state (useMockRole). Redirects to "/", matching
+// exactly where a real successful psychologist signup sends the user (see
+// RealPsychologistSignupForm below).
+function MockPsychologistSignupForm() {
+  const router = useRouter();
+  const { setRole } = useMockRole();
+
+  function handleContinue() {
+    setRole("psychologist");
+    router.push("/");
+  }
+
+  return (
+    <div className="w-full max-w-md space-y-4">
+      <p className="text-sm text-stone-600">
+        Prototype mode — no backend running. Continuing previews the app as a
+        psychologist; nothing here is actually registered, and there&apos;s no
+        approval workflow to wait on in this mode.
+      </p>
+      <Button onClick={handleContinue}>Continue as a psychologist</Button>
+    </div>
+  );
+}
 
 const initialValues: RegisterPsychologistInput = {
   username: "",
@@ -21,7 +57,8 @@ const initialValues: RegisterPsychologistInput = {
   bio: "",
 };
 
-export function PsychologistSignupForm() {
+// Unchanged real-API behavior (Phase 3, PR #45).
+function RealPsychologistSignupForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [values, setValues] = useState<RegisterPsychologistInput>(initialValues);
