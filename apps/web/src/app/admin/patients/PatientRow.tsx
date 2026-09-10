@@ -1,4 +1,4 @@
-import { Badge, TableCell, TableRow, severityToTone } from "@/components/ui";
+import { Badge, TableCell, TableRow, severityToLabel, severityToTone } from "@/components/ui";
 import type { PatientRowData } from "@/lib/mock/adminPatients";
 import { ScoreSummaryCell } from "./ScoreSummaryCell";
 
@@ -9,7 +9,9 @@ export function PatientRow({ patient }: { patient: PatientRowData }) {
     <TableRow>
       <TableCell className="font-medium">{patient.name}</TableCell>
       <TableCell>
-        <Badge tone={severityToTone(patient.latestSeverity)}>{patient.latestSeverity}</Badge>
+        <Badge tone={severityToTone(patient.latestSeverity)}>
+          {severityToLabel(patient.latestSeverity)}
+        </Badge>
       </TableCell>
       <TableCell>
         <ScoreSummaryCell scores={patient.scoreSummary} />
