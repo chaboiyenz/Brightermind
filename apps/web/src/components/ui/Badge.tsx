@@ -38,3 +38,18 @@ export function severityToTone(severity: "minimal" | "mild" | "moderate" | "seve
   } as const;
   return map[severity];
 }
+
+/**
+ * Display label for a severity value — sentence case ("Severe") rather than
+ * the raw lowercase value the type uses internally, wherever a severity band
+ * is shown directly to a user (GAD-7 result, psychologist inbox, etc).
+ */
+export function severityToLabel(severity: "minimal" | "mild" | "moderate" | "severe"): string {
+  const map = {
+    minimal: "Minimal",
+    mild: "Mild",
+    moderate: "Moderate",
+    severe: "Severe",
+  } as const;
+  return map[severity];
+}

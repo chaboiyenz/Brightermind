@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { buttonVariants, cn } from "@/components/ui";
 import { LOGIN_LINK, PRIMARY_NAV } from "./siteLinks";
+import { Wordmark } from "./Wordmark";
 
 const NAV_LINK_CLASS =
   "rounded-md px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-brand-50 hover:text-brand-700";
@@ -77,20 +78,5 @@ export function SiteHeader() {
         </ul>
       </nav>
     </header>
-  );
-}
-
-function Wordmark() {
-  return (
-    <Link
-      href="/"
-      className="flex items-center gap-2 text-lg font-semibold tracking-tight text-stone-900"
-    >
-      <span
-        aria-hidden="true"
-        className="inline-block h-3 w-3 rounded-full bg-brand-600 ring-4 ring-brand-100"
-      />
-      BrighterMind
-    </Link>
   );
 }
