@@ -1,5 +1,3 @@
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
 import { CrisisBanner } from "@/components/home/CrisisBanner";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
@@ -19,18 +17,19 @@ async function loadHeroBlock(): Promise<ContentBlock> {
   }
 }
 
+// SiteHeader/SiteFooter render from the root layout (SiteChrome) now — this
+// page only owns the content between them. CrisisBanner stays home-page-only
+// (see SiteChrome's docblock for why it wasn't lifted alongside the header).
 export default async function HomePage() {
   const block = await loadHeroBlock();
 
   return (
-    <div className="flex min-h-screen flex-col bg-stone-50">
-      <SiteHeader />
+    <>
       <CrisisBanner />
       <main className="flex-1">
         <HeroSection block={block} />
         <FeatureGrid />
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }
