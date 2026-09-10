@@ -26,26 +26,40 @@ export function TaskList({ initialTasks }: TaskListProps) {
     initialData: initialTasks,
   });
 
+  // Takes the full pre-click task (not just its id) so both branches below
+  // flip from the exact same pre-mutation snapshot the caller already has in
+  // `data` — see the fix note below for why that matters.
+  function flipTask(task: Task): Task {
+    return {
+      ...task,
+      is_completed: !task.is_completed,
+      score: task.is_completed ? Math.max(task.score - 1, 0) : task.score + 1,
+    };
+  }
+
   const toggleMutation = useMutation({
     // Toggling is genuinely interactive (requirement: confirm it still
     // works sensibly against fallback data), so mock mode computes the
     // flip locally — mirroring the real endpoint's response shape — instead
     // of calling PATCH /v2/tasks/:id/toggle/. Local state only, no
     // persistence, same as every other mocked interactive element here.
-    mutationFn: (id: number): Promise<Task> => {
+    //
+    // FIX: this used to re-derive the flip by reading the task back out of
+    // the query cache — but onMutate below runs first and optimistically
+    // writes the flipped task into that same cache, so reading it here
+    // flipped it a second time and immediately reverted it (visible as the
+    // checkbox flashing and snapping back). Taking the pre-click `task` as
+    // the mutation variable instead means both onMutate's optimistic update
+    // and this mock resolution flip the same untouched snapshot once each,
+    // landing on the same result.
+    mutationFn: (task: Task): Promise<Task> => {
       if (isMockMode()) {
-        const current = queryClient.getQueryData<Task[]>(["tasks"]);
-        const task = current?.find((t) => t.id === id);
-        if (!task) return Promise.reject(new Error("Task not found"));
-        return Promise.resolve({
-          ...task,
-          is_completed: !task.is_completed,
-          score: task.is_completed ? Math.max(task.score - 1, 0) : task.score + 1,
-        });
+        return Promise.resolve(flipTask(task));
       }
-      return toggleTask(id);
+      return toggleTask(task.id);
     },
-    onMutate: async (id: number) => {
+    onMutate: async (task: Task) => {
+      const id = task.id;
       setRowErrors((current) => ({ ...current, [id]: "" }));
       await queryClient.cancelQueries({ queryKey: ["tasks"] });
       const previous = queryClient.getQueryData<Task[]>(["tasks"]);
@@ -54,20 +68,12 @@ export function TaskList({ initialTasks }: TaskListProps) {
       // feedback; the onSuccess response below is what actually applies
       // the authoritative delta, this is just UI snappiness in the meantime.
       queryClient.setQueryData<Task[]>(["tasks"], (current) =>
-        current?.map((task) =>
-          task.id === id
-            ? {
-                ...task,
-                is_completed: !task.is_completed,
-                score: task.is_completed ? Math.max(task.score - 1, 0) : task.score + 1,
-              }
-            : task
-        )
+        current?.map((t) => (t.id === id ? flipTask(t) : t))
       );
 
       return { previous };
     },
-    onError: (error: unknown, id, context) => {
+    onError: (error: unknown, task, context) => {
       // Revert the optimistic change — never leave the UI showing a state
       // the server rejected.
       if (context?.previous) {
@@ -75,7 +81,7 @@ export function TaskList({ initialTasks }: TaskListProps) {
       }
       setRowErrors((current) => ({
         ...current,
-        [id]: error instanceof Error ? error.message : "Couldn't update this task.",
+        [task.id]: error instanceof Error ? error.message : "Couldn't update this task.",
       }));
     },
     onSuccess: (updatedTask) => {
@@ -126,7 +132,7 @@ export function TaskList({ initialTasks }: TaskListProps) {
         <div key={task.id}>
           <TaskItem
             task={task}
-            onToggle={(id) => toggleMutation.mutate(id)}
+            onToggle={() => toggleMutation.mutate(task)}
             onDelete={(id) => deleteMutation.mutate(id)}
           />
           {rowErrors[task.id] && (
