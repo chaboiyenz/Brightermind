@@ -7,6 +7,7 @@ import {
   TableHead,
   TableHeaderCell,
   TableRow,
+  severityToLabel,
   severityToTone,
 } from "@/components/ui";
 import type { InboxRow } from "@/lib/mock/inbox";
@@ -16,7 +17,7 @@ function SeverityCell({ severity }: { severity: InboxRow["severity"] }) {
   if (severity === "unknown") {
     return <Badge tone="neutral">Not screened</Badge>;
   }
-  return <Badge tone={severityToTone(severity)}>{severity}</Badge>;
+  return <Badge tone={severityToTone(severity)}>{severityToLabel(severity)}</Badge>;
 }
 
 // Server component (module 12): renders whatever rows it is handed. Under the
