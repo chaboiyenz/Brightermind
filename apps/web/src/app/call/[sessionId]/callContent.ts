@@ -7,3 +7,12 @@ export function connectingLabel(partnerName: string) {
 
 export const CALL_ENDED_MESSAGE = "Session ended. Take care.";
 export const CALL_ERROR_MESSAGE = "Couldn't connect — retry?";
+
+// Real error conditions now that the call is a live Jitsi session (these
+// replaced the old "simulate connection issue" button). Same calm register.
+export const CALL_LOAD_FAILED_MESSAGE =
+  "The video service couldn't be loaded. Check your connection and retry.";
+export const CAMERA_BLOCKED_MESSAGE =
+  "Camera or microphone access was blocked. Allow it in your browser's site settings, then retry.";
+export const NO_DEVICE_MESSAGE =
+  "No camera or microphone was found on this device.";
