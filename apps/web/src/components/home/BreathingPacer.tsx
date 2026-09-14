@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { cn } from "@/components/ui";
 
 // 4 s in, 4 s hold, 6 s out — the "lavender" pace from
 // app/coping/aromatherapy/aromatherapyData.ts. Must match the `breathe`
@@ -25,6 +26,35 @@ export function phaseAt(elapsedSeconds: number): Phase {
 }
 
 const STATIC_PHASE: Phase = { word: "Breathe", remaining: 0 };
+
+// Highlight sits above centre so the phase word lands on the brand-500/600
+// band (white on brand-300 was only ~2.4:1).
+const SPHERE_BACKGROUND =
+  "radial-gradient(circle at 50% 30%, rgb(var(--brand-300)) 0%, rgb(var(--brand-500)) 45%, rgb(var(--brand-600)) 100%)";
+
+interface RingProps {
+  size: number;
+  className?: string;
+  style?: CSSProperties;
+}
+
+// Centering lives on the wrapper because the `breathe` keyframes own
+// `transform`: with translate and the animation on one element, scale()
+// replaced the translate and every ring drifted down-right by half its size.
+function Ring({ size, className, style }: RingProps) {
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      style={{ width: size, height: size }}
+    >
+      <span
+        className={cn("block h-full w-full rounded-full motion-safe:animate-breathe", className)}
+        style={style}
+      />
+    </span>
+  );
+}
 
 export function BreathingPacer() {
   const [phase, setPhase] = useState<Phase>({ word: "Breathe in", remaining: INHALE_SECONDS });
@@ -56,14 +86,12 @@ export function BreathingPacer() {
     // changes every second and would be noise, but the current phase can be
     // read on demand.
     <div className="relative grid h-[210px] place-items-center">
-      <span aria-hidden="true" className="absolute left-1/2 top-1/2 h-[250px] w-[250px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-50 opacity-70 motion-safe:animate-breathe" />
-      <span aria-hidden="true" className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-100 opacity-70 motion-safe:animate-breathe" />
-      <span
-        aria-hidden="true"
-        className="absolute left-1/2 top-1/2 h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-full shadow-[0_20px_40px_-20px_rgb(var(--brand-700))] motion-safe:animate-breathe"
-        style={{
-          background: "radial-gradient(circle at 50% 45%, rgb(var(--brand-300)), rgb(var(--brand-600)))",
-        }}
+      <Ring size={250} className="bg-brand-50 opacity-70" />
+      <Ring size={200} className="bg-brand-100 opacity-70" />
+      <Ring
+        size={150}
+        className="shadow-[0_20px_40px_-20px_rgb(var(--brand-700))]"
+        style={{ background: SPHERE_BACKGROUND }}
       />
       <div className="relative z-10 text-center font-display text-on-brand" aria-live="off">
         <span className="block text-lg tracking-[0.02em]">{phase.word}</span>

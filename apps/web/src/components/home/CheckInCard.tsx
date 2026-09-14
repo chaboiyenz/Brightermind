@@ -19,9 +19,11 @@ export function CheckInCard() {
       aria-label="Today's check-in"
       className="grid gap-5 rounded-2xl border border-stone-200 bg-stone-25 p-5 shadow-float sm:p-6"
     >
-      <div className="flex items-center justify-between gap-3 text-[13px] text-stone-600">
-        <strong className="font-display text-sm font-semibold text-stone-900">Today&apos;s check-in</strong>
-        <span>Lavender pace · 4 in · 4 hold · 6 out</span>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-[13px] text-stone-600">
+        <strong className="whitespace-nowrap font-display text-sm font-semibold text-stone-900">
+          Today&apos;s check-in
+        </strong>
+        <span className="whitespace-nowrap">Lavender pace · 4 in · 4 hold · 6 out</span>
       </div>
 
       <BreathingPacer />
