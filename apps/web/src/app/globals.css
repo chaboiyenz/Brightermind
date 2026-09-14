@@ -1,3 +1,196 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+  Theme tokens — docs/DESIGN.md.
+
+  Every color scale in tailwind.config.ts resolves to one of these RGB
+  triplets (`rgb(var(--brand-600) / <alpha-value>)`), so light and dark are
+  swapped here, once, and every page built with brand/stone/clay/sage/brick
+  classes follows without edits.
+
+  Light  = "Serene Restorative Sanctuary" (linen ground, sage/forest green,
+           slate-green ink, soft coral action).
+  Dark   = "Evening Pine" (deep pine ground, warm stone ink, soft pine accent,
+           desaturated clay action).
+
+  Resolution order: bare :root is light; the OS dark preference applies dark
+  unless <html data-theme="light">; <html data-theme="dark"> forces dark.
+  `.theme-dark` on any element applies the dark set to that subtree only.
+*/
+:root {
+  color-scheme: light;
+
+  /* brand — sage / forest green (primary interactive) */
+  --brand-50: 241 246 242;
+  --brand-100: 208 229 216;
+  --brand-200: 171 207 177;
+  --brand-300: 136 171 142;
+  --brand-400: 110 147 117;
+  --brand-500: 86 124 95;
+  --brand-600: 69 102 77;
+  --brand-700: 46 78 54;
+  --brand-800: 32 63 41;
+  --brand-900: 20 48 28;
+  --on-brand: 255 255 255;
+
+  /* stone — warm linen neutrals; 25 is the card surface, 50 the canvas */
+  --stone-25: 255 255 255;
+  --stone-50: 248 250 247;
+  --stone-100: 242 244 241;
+  --stone-200: 229 234 227;
+  --stone-300: 194 200 192;
+  --stone-600: 114 121 113;
+  --stone-700: 66 72 66;
+  --stone-800: 44 62 53;
+  --stone-900: 25 28 27;
+
+  /* clay — soft coral, reserved for the booking CTA and crisis strip */
+  --clay-50: 253 241 237;
+  --clay-100: 255 219 210;
+  --clay-400: 239 134 106;
+  --clay-500: 224 122 95;
+  --clay-600: 154 68 45;
+  /* dark ink on coral (DESIGN.md on-tertiary-fixed): white on #E07A5F is only 2.9:1 */
+  --on-clay: 60 8 0;
+
+  /* sage — positive / progress */
+  --sage-50: 241 245 238;
+  --sage-100: 211 231 219;
+  --sage-500: 127 163 122;
+  --sage-600: 79 115 89;
+
+  /* brick — errors and the highest severity band; muted terracotta, not red */
+  --brick-50: 251 240 238;
+  --brick-100: 240 211 204;
+  --brick-500: 182 92 75;
+  --brick-600: 152 72 58;
+
+  /* shadows (slate-green tinted per DESIGN.md) */
+  --shadow-soft: 0 4px 16px -2px rgb(44 62 53 / 0.04), 0 8px 28px -4px rgb(44 62 53 / 0.06);
+  --shadow-float: 0 16px 40px -8px rgb(44 62 53 / 0.08), 0 24px 64px -12px rgb(44 62 53 / 0.05);
+  --shadow-coral: 0 4px 12px rgb(224 122 95 / 0.25);
+  --frost: 255 255 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --brand-50: 26 43 39;
+    --brand-100: 34 57 47;
+    --brand-200: 47 82 71;
+    --brand-300: 58 122 107;
+    --brand-400: 84 147 132;
+    --brand-500: 124 174 159;
+    --brand-600: 124 174 159;
+    --brand-700: 168 201 192;
+    --brand-800: 211 228 223;
+    --brand-900: 238 244 242;
+    --on-brand: 15 26 23;
+
+    --stone-25: 23 34 32;
+    --stone-50: 18 26 24;
+    --stone-100: 24 36 33;
+    --stone-200: 34 49 45;
+    --stone-300: 47 66 61;
+    --stone-600: 163 158 144;
+    --stone-700: 215 211 201;
+    --stone-800: 228 225 217;
+    --stone-900: 242 240 235;
+
+    --clay-50: 42 33 28;
+    --clay-100: 58 44 36;
+    --clay-400: 210 161 131;
+    --clay-500: 192 139 107;
+    --clay-600: 224 179 150;
+    --on-clay: 31 23 18;
+
+    --sage-50: 28 37 26;
+    --sage-100: 38 51 31;
+    --sage-500: 127 163 122;
+    --sage-600: 169 197 164;
+
+    --brick-50: 46 28 25;
+    --brick-100: 58 38 34;
+    --brick-500: 201 122 106;
+    --brick-600: 224 160 144;
+
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+    --shadow-float: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.7);
+    --shadow-coral: 0 4px 12px rgb(192 139 107 / 0.25);
+    --frost: 23 34 32;
+  }
+}
+
+/* `.theme-dark` scopes the dark set to a subtree in either theme — used for
+   surfaces that are dark by design (video call room, counselling section). */
+:root[data-theme="dark"],
+.theme-dark {
+  color-scheme: dark;
+
+  --brand-50: 26 43 39;
+  --brand-100: 34 57 47;
+  --brand-200: 47 82 71;
+  --brand-300: 58 122 107;
+  --brand-400: 84 147 132;
+  --brand-500: 124 174 159;
+  --brand-600: 124 174 159;
+  --brand-700: 168 201 192;
+  --brand-800: 211 228 223;
+  --brand-900: 238 244 242;
+  --on-brand: 15 26 23;
+
+  --stone-25: 23 34 32;
+  --stone-50: 18 26 24;
+  --stone-100: 24 36 33;
+  --stone-200: 34 49 45;
+  --stone-300: 47 66 61;
+  --stone-600: 163 158 144;
+  --stone-700: 215 211 201;
+  --stone-800: 228 225 217;
+  --stone-900: 242 240 235;
+
+  --clay-50: 42 33 28;
+  --clay-100: 58 44 36;
+  --clay-400: 210 161 131;
+  --clay-500: 192 139 107;
+  --clay-600: 224 179 150;
+  --on-clay: 31 23 18;
+
+  --sage-50: 28 37 26;
+  --sage-100: 38 51 31;
+  --sage-500: 127 163 122;
+  --sage-600: 169 197 164;
+
+  --brick-50: 46 28 25;
+  --brick-100: 58 38 34;
+  --brick-500: 201 122 106;
+  --brick-600: 224 160 144;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  --shadow-float: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.7);
+  --shadow-coral: 0 4px 12px rgb(192 139 107 / 0.25);
+  --frost: 23 34 32;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  body {
+    @apply bg-stone-50 text-stone-900 antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+}

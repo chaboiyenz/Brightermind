@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Phone } from "lucide-react";
 import { HOTLINES_LINK } from "@/components/site/siteLinks";
 import { CRISIS_HOTLINE } from "./homeContent";
+import { CONTAINER_CLASS } from "./SectionHeading";
 
 // Sits directly under the sticky header so it is visible before any
 // scrolling — crisis resources must never be below the fold on this app.
@@ -9,27 +9,27 @@ export function CrisisBanner() {
   return (
     <aside
       aria-label="Crisis support"
-      className="border-b border-clay-100 bg-clay-50 text-stone-800"
+      className="border-b border-clay-100 bg-clay-50 text-sm text-stone-700"
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className={`${CONTAINER_CLASS} flex flex-wrap items-center justify-between gap-x-5 gap-y-1.5 py-2.5`}>
         <p className="flex items-center gap-2">
-          <Phone className="h-4 w-4 shrink-0 text-clay-600" aria-hidden="true" />
+          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-clay-500" />
           <span>
-            In crisis? Call the{" "}
+            If you are in crisis right now, call the{" "}
             <a
               href={CRISIS_HOTLINE.telHref}
               className="font-semibold text-clay-600 underline underline-offset-4"
             >
-              {CRISIS_HOTLINE.name} {CRISIS_HOTLINE.number}
+              {CRISIS_HOTLINE.name} · {CRISIS_HOTLINE.number}
             </a>{" "}
-            <span className="text-stone-600">({CRISIS_HOTLINE.note})</span>
+            <span className="text-stone-600">({CRISIS_HOTLINE.note})</span>. You do not need an account.
           </span>
         </p>
         <Link
           href={HOTLINES_LINK.href}
-          className="font-medium text-clay-600 underline-offset-4 hover:underline"
+          className="font-semibold text-clay-600 underline-offset-4 hover:underline"
         >
-          View all {HOTLINES_LINK.label.toLowerCase()} &rarr;
+          All {HOTLINES_LINK.label.toLowerCase()} &rarr;
         </Link>
       </div>
     </aside>

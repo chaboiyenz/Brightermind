@@ -74,6 +74,9 @@ interface CallRoomProps {
 // the iframe would hide the very button the user has to press. It's a status
 // caption instead; only errors block the video area.
 //
+// The page wraps this in `.theme-dark` (globals.css), so stone-50/100 are the
+// dark room and stone-900 is light text in BOTH site themes.
+//
 // FLAG — public server: rooms live on meet.jit.si (8x8's free public
 // instance). Fine for a free prototype demo; NOT appropriate once real
 // patient sessions or data are involved — sessions are neither private nor
@@ -171,7 +174,7 @@ export function CallRoom({ sessionId, partnerName }: CallRoomProps) {
         data-call-state="ended"
         className="flex flex-1 flex-col items-center justify-center gap-2 text-center"
       >
-        <p className="text-lg font-medium text-stone-25">{CALL_ENDED_MESSAGE}</p>
+        <p className="text-lg font-medium text-stone-900">{CALL_ENDED_MESSAGE}</p>
       </div>
     );
   }
@@ -183,7 +186,7 @@ export function CallRoom({ sessionId, partnerName }: CallRoomProps) {
           "Join meeting" stays fully clickable. */}
       {connectionState === "connecting" && (
         <p
-          className="flex items-center justify-center gap-2 px-4 pt-4 text-sm font-medium text-stone-25"
+          className="flex items-center justify-center gap-2 px-4 pt-4 text-sm font-medium text-stone-900"
           role="status"
         >
           <span
@@ -194,14 +197,14 @@ export function CallRoom({ sessionId, partnerName }: CallRoomProps) {
         </p>
       )}
 
-      <div className="relative m-4 flex flex-1 overflow-hidden rounded-lg bg-stone-800">
+      <div className="relative m-4 flex flex-1 overflow-hidden rounded-lg bg-stone-100">
         {/* Jitsi mounts its iframe here (it sets allow="camera; microphone"
             on the iframe itself). Always in the DOM so the API has a
             parentNode to attach to. */}
         <div ref={containerRef} className="h-full w-full" />
 
         {connectionState === "error" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-stone-900/90 px-6 text-center text-stone-25">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-stone-50/90 px-6 text-center text-stone-900">
             <p className="max-w-sm text-sm font-medium" role="alert">
               {errorMessage}
             </p>
