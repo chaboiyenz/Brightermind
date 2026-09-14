@@ -5,6 +5,7 @@ import { QueryProvider } from "@/components/QueryProvider";
 import { AuthRoleProvider } from "@/components/AuthRoleProvider";
 import { MockRoleProvider } from "@/components/MockRoleProvider";
 import { THEME_INIT_SCRIPT } from "@/components/site/themeStorage";
+import { SiteChrome } from "@/components/site/SiteChrome";
 import { isMockMode } from "@/lib/mock/mockMode";
 import "./globals.css";
 
@@ -54,7 +55,9 @@ export default function RootLayout({
         */}
         <QueryProvider>
           <RoleProviderForMode>
-            <ToastProvider>{children}</ToastProvider>
+            <ToastProvider>
+              <SiteChrome>{children}</SiteChrome>
+            </ToastProvider>
           </RoleProviderForMode>
         </QueryProvider>
       </body>

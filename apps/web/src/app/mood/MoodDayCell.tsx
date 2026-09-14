@@ -20,7 +20,7 @@ export function MoodDayCell({ day, mood, isToday, onSelect }: MoodDayCellProps) 
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex h-16 flex-col items-center justify-center rounded-md border text-sm transition-colors",
+        "flex h-20 flex-col items-center justify-center rounded-md border text-base transition-colors",
         mood ? MOOD_COLOR_CLASSES[mood] : "bg-stone-25 text-stone-700 hover:bg-stone-50",
         isToday ? "border-brand-500" : "border-stone-200"
       )}

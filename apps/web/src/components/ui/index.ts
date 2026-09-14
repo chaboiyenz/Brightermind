@@ -12,7 +12,7 @@ export {
   TableHeaderCell,
   TableCell,
 } from "./Table";
-export { Badge, severityToTone, type BadgeProps } from "./Badge";
+export { Badge, severityToTone, severityToLabel, type BadgeProps } from "./Badge";
 export { Avatar, type AvatarProps } from "./Avatar";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { Skeleton, SkeletonText, SkeletonCard } from "./Skeleton";

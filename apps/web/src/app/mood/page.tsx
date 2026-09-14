@@ -34,7 +34,7 @@ export default async function MoodTrackerPage() {
   const entries = await loadMoodEntries(month);
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
+    <main className="mx-auto max-w-3xl p-6">
       <h1 className="mb-4 text-lg font-medium text-stone-900">Mood Tracker</h1>
       <MoodCalendar initialMonth={month} initialEntries={entries} />
     </main>

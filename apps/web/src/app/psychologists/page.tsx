@@ -6,8 +6,8 @@ import { PsychologistCard } from "./PsychologistCard";
 // Server component fed by the mock fixture — swap getMockPsychologists for
 // the real fetch when the API is wired. Open to every role: v1's `prof`
 // directory was student-facing, and nothing here is privileged. The admin
-// approval queue (/admin/psychologists) is out of scope for this prototype
-// because approve/reject is backend-dependent.
+// approval queue lives at /admin/psychologists (AdminApprovalQueuePage),
+// mocked with local-state-only approve/reject since it's backend-dependent.
 export default function PsychologistDirectoryPage() {
   const psychologists = getMockPsychologists();
 

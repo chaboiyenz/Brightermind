@@ -5,6 +5,42 @@ import { useRouter } from "next/navigation";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button, FormField, Input, Textarea } from "@/components/ui";
 import { registerPsychologist, type RegisterPsychologistInput } from "@/lib/api";
+import { isMockMode } from "@/lib/mock/mockMode";
+import { useMockRole } from "@/components/MockRoleProvider";
+
+// Mock-mode retrofit (decision (b), docs/prototype-roadmap.md) — this route
+// is specifically the *psychologist* signup, so mock mode just sets the role
+// to "psychologist" and moves on, same pattern as SignupForm/LoginForm.
+export function PsychologistSignupForm() {
+  if (isMockMode()) return <MockPsychologistSignupForm />;
+  return <RealPsychologistSignupForm />;
+}
+
+// No form fields, no real account, no unapproved-status workflow (that's a
+// real-backend concept) — purely a role-selection stand-in, reusing
+// MockRoleProvider's role state (useMockRole). Redirects to "/", matching
+// exactly where a real successful psychologist signup sends the user (see
+// RealPsychologistSignupForm below).
+function MockPsychologistSignupForm() {
+  const router = useRouter();
+  const { setRole } = useMockRole();
+
+  function handleContinue() {
+    setRole("psychologist");
+    router.push("/");
+  }
+
+  return (
+    <div className="w-full max-w-md space-y-4">
+      <p className="text-sm text-stone-600">
+        Prototype mode — no backend running. Continuing previews the app as a
+        psychologist; nothing here is actually registered, and there&apos;s no
+        approval workflow to wait on in this mode.
+      </p>
+      <Button onClick={handleContinue}>Continue as a psychologist</Button>
+    </div>
+  );
+}
 
 const initialValues: RegisterPsychologistInput = {
   username: "",
@@ -21,7 +57,8 @@ const initialValues: RegisterPsychologistInput = {
   bio: "",
 };
 
-export function PsychologistSignupForm() {
+// Unchanged real-API behavior (Phase 3, PR #45).
+function RealPsychologistSignupForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [values, setValues] = useState<RegisterPsychologistInput>(initialValues);
@@ -55,7 +92,10 @@ export function PsychologistSignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-stone-600">
+        Personal info
+      </p>
       <FormField label="Username" htmlFor="username">
         <Input id="username" value={values.username} onChange={update("username")} required />
       </FormField>
@@ -86,6 +126,10 @@ export function PsychologistSignupForm() {
           required
         />
       </FormField>
+
+      <p className="border-t border-stone-200 pt-4 text-xs font-semibold uppercase tracking-wide text-stone-600">
+        Professional info
+      </p>
       <FormField label="License number" htmlFor="license_number">
         <Input
           id="license_number"
@@ -136,7 +180,7 @@ export function PsychologistSignupForm() {
           {error}
         </p>
       )}
-      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting} className="w-full">
         Sign up
       </Button>
     </form>

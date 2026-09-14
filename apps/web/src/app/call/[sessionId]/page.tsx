@@ -21,7 +21,7 @@ export default async function VideoCallPage({ params }: VideoCallPageProps) {
 
   return (
     <main className="theme-dark mx-auto my-4 flex h-[calc(100vh-2rem)] max-w-2xl flex-col overflow-hidden rounded-lg border border-stone-200 bg-stone-50 text-stone-900">
-      <CallRoom partnerName={session.partnerName} />
+      <CallRoom sessionId={session.sessionId} partnerName={session.partnerName} />
     </main>
   );
 }

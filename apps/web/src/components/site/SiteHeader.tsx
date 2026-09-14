@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import { buttonVariants, cn } from "@/components/ui";
 import { BrandMark } from "./BrandMark";
 import { ThemeToggle } from "./ThemeToggle";
@@ -30,9 +30,11 @@ export function SiteHeader() {
           <ThemeToggle className="ml-1" />
           <Link
             href={LOGIN_LINK.href}
+            aria-label={LOGIN_LINK.label}
+            title={LOGIN_LINK.label}
             className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "ml-1")}
           >
-            {LOGIN_LINK.label}
+            <LogIn className="h-4 w-4" aria-hidden="true" />
           </Link>
           <Link
             href={BOOK_LINK.href}
@@ -83,6 +85,7 @@ export function SiteHeader() {
               className={cn(buttonVariants({ variant: "outline", size: "md" }), "flex-1")}
               onClick={() => setIsMenuOpen(false)}
             >
+              <LogIn className="h-4 w-4" aria-hidden="true" />
               {LOGIN_LINK.label}
             </Link>
             <Link

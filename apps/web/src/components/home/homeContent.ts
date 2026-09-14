@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { ContentBlock } from "@/lib/api";
 import type { GameSlug } from "@/app/coping/[game]/gameData";
+import { PRIMARY_HOTLINE } from "./hotlinesData";
 
 // Static landing-page content, per the prototype pivot (ground rule 1: no
 // live data required for layout work). The CMS `home` block still supplies
@@ -35,16 +36,15 @@ export const HERO = {
   notes: ["Anxiety, stress, low mood, sleep, burnout", "Screening and support, not a diagnosis"],
 } as const;
 
-// PLACEHOLDER — verify before any public launch (prototype-roadmap ground
-// rule 3: flag, do not silently invent). 1553 is the NCMH Crisis Hotline
-// toll-free landline number for Luzon; confirm coverage and wording with the
-// team, and replace with the real hotline directory contents once
-// /resources/hotlines lands.
+// Primary crisis number shown on the home banner. Real data — see
+// hotlinesData.ts for the full 8-entry directory and sourcing notes. Still
+// web-sourced rather than independently re-verified by a human; do not
+// remove that caveat from the UI until someone has actually confirmed it.
 export const CRISIS_HOTLINE = {
-  name: "NCMH Crisis Hotline",
-  number: "1553",
-  telHref: "tel:1553",
-  note: "toll-free, 24/7",
+  name: PRIMARY_HOTLINE.name,
+  number: PRIMARY_HOTLINE.number,
+  telHref: PRIMARY_HOTLINE.telHref,
+  note: "24/7",
 } as const;
 
 export type Tone = "brand" | "clay" | "sage" | "neutral";
