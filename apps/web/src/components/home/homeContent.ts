@@ -12,9 +12,9 @@ export const HOME_FALLBACK: ContentBlock = {
   slug: "home",
   title: "BrighterMind",
   content:
-    "Mental health support for students — screening tools, mood tracking, " +
-    "coping techniques, and support from registered psychologists, all in " +
-    "one place.",
+    "A student-focused space for mental health support, offering screening " +
+    "tools, mood tracking, coping strategies, and guidance from registered " +
+    "psychologists in one convenient place.",
   created_at: "",
 };
 
