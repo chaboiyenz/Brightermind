@@ -14,6 +14,28 @@ const DARK_QUERY = "(prefers-color-scheme: dark)";
 export function ThemeToggle({ className }: { className?: string }) {
   const [theme, setTheme] = useState<ThemeChoice | null>(null);
 
+  function toggleTheme(event: React.MouseEvent<HTMLButtonElement>) {
+    const nextTheme: ThemeChoice = theme === "dark" ? "light" : "dark";
+    const button = event.currentTarget.getBoundingClientRect();
+    const root = document.documentElement;
+    root.style.setProperty("--theme-toggle-x", `${button.left + button.width / 2}px`);
+    root.style.setProperty("--theme-toggle-y", `${button.top + button.height / 2}px`);
+
+    const updateTheme = () => {
+      applyTheme(nextTheme);
+      setTheme(nextTheme);
+    };
+
+    const viewTransitionDocument = document as Document & {
+      startViewTransition?: (update: () => void) => void;
+    };
+    if (viewTransitionDocument.startViewTransition) {
+      viewTransitionDocument.startViewTransition(updateTheme);
+    } else {
+      updateTheme();
+    }
+  }
+
   useEffect(() => {
     setTheme(readStoredTheme() ?? systemTheme());
 
@@ -31,10 +53,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      onClick={() => {
-        applyTheme(next);
-        setTheme(next);
-      }}
+      onClick={toggleTheme}
       aria-label={label}
       title={label}
       className={cn(
@@ -43,9 +62,9 @@ export function ThemeToggle({ className }: { className?: string }) {
       )}
     >
       {theme === "dark" ? (
-        <Sun className="h-[18px] w-[18px]" aria-hidden="true" />
+        <Sun key="sun" className="theme-toggle-icon h-[18px] w-[18px]" aria-hidden="true" />
       ) : (
-        <Moon className="h-[18px] w-[18px]" aria-hidden="true" />
+        <Moon key="moon" className="theme-toggle-icon h-[18px] w-[18px]" aria-hidden="true" />
       )}
     </button>
   );

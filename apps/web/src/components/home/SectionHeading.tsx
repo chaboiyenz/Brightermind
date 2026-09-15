@@ -4,7 +4,7 @@ import { cn } from "@/components/ui";
 // docs/DESIGN.md layout: 1160px max content width, 1.25 / 2.5 / 3.5 rem margins.
 export const CONTAINER_CLASS = "mx-auto w-full max-w-container px-5 sm:px-10 lg:px-14";
 
-export const SECTION_CLASS = "py-16 sm:py-20 lg:py-24";
+export const SECTION_CLASS = "scroll-mt-24 py-16 sm:py-20 lg:py-24 target:animate-in";
 
 export const TONE_CHIP_CLASSES = {
   brand: "bg-brand-100 text-brand-700",

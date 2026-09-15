@@ -17,7 +17,7 @@ export function HeroSection({ block }: { block: ContentBlock }) {
         className="pointer-events-none absolute inset-0 opacity-90"
         style={{
           background:
-            "radial-gradient(60% 55% at 78% 40%, rgb(var(--brand-100)) 0%, transparent 70%), radial-gradient(40% 40% at 10% 90%, rgb(var(--clay-50)) 0%, transparent 70%)",
+            "radial-gradient(60% 55% at 78% 40%, rgb(var(--brand-100)) 0%, transparent 70%), radial-gradient(58% 62% at 10% 90%, rgb(var(--sage-50)) 0%, transparent 72%)",
         }}
       />
       <div

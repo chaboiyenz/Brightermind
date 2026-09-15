@@ -194,3 +194,59 @@
     text-wrap: balance;
   }
 }
+
+@keyframes theme-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-24deg) scale(0.65);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.theme-toggle-icon {
+  animation: theme-icon-in 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 1600ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: theme-root-out;
+}
+
+::view-transition-new(root) {
+  animation-name: theme-root-in;
+  z-index: 1;
+}
+
+@keyframes theme-root-in {
+  from {
+    clip-path: circle(0 at var(--theme-toggle-x) var(--theme-toggle-y));
+  }
+  to {
+    clip-path: circle(150vmax at var(--theme-toggle-x) var(--theme-toggle-y));
+  }
+}
+
+@keyframes theme-root-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle-icon,
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

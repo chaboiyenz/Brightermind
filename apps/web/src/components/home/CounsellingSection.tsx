@@ -20,7 +20,7 @@ export function CounsellingSection() {
     <section
       id="counselling"
       aria-labelledby="counselling-heading"
-      className={cn(SECTION_CLASS, "theme-dark relative overflow-hidden bg-brand-50 text-stone-900")}
+      className={cn(SECTION_CLASS, "relative overflow-hidden bg-brand-50 text-stone-900")}
     >
       <div
         aria-hidden="true"
