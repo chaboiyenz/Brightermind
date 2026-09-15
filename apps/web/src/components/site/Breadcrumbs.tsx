@@ -38,6 +38,7 @@ const STATIC_ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/psychologists": [HOME, { label: "Psychologists" }],
   "/resources/hotlines": [HOME, { label: "Crisis hotlines" }],
   "/screening/gad7": [HOME, { label: "GAD-7 screening" }],
+  "/screening/phq9": [HOME, { label: "PHQ-9 screening" }],
   "/signup": [HOME, { label: "Sign up" }],
   "/signup/psychologist": [HOME, { label: "Sign up", href: "/signup" }, { label: "Psychologist" }],
   "/tools/todo": [HOME, { label: "To-do" }],

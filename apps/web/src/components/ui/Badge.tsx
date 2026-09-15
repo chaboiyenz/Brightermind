@@ -29,11 +29,14 @@ export function Badge({ className, tone, ...props }: BadgeProps) {
  * "severe" per the migration plan's design note — calm, non-alarming language
  * even at higher severity, paired with a clear next step elsewhere in the UI.
  */
-export function severityToTone(severity: "minimal" | "mild" | "moderate" | "severe") {
+export function severityToTone(
+  severity: "minimal" | "mild" | "moderate" | "moderately-severe" | "severe"
+) {
   const map = {
     minimal: "success",
     mild: "brand",
     moderate: "warning",
+    "moderately-severe": "warning",
     severe: "warning", // intentionally not "danger" — see note above
   } as const;
   return map[severity];
@@ -44,11 +47,14 @@ export function severityToTone(severity: "minimal" | "mild" | "moderate" | "seve
  * the raw lowercase value the type uses internally, wherever a severity band
  * is shown directly to a user (GAD-7 result, psychologist inbox, etc).
  */
-export function severityToLabel(severity: "minimal" | "mild" | "moderate" | "severe"): string {
+export function severityToLabel(
+  severity: "minimal" | "mild" | "moderate" | "moderately-severe" | "severe"
+): string {
   const map = {
     minimal: "Minimal",
     mild: "Mild",
     moderate: "Moderate",
+    "moderately-severe": "Moderately severe",
     severe: "Severe",
   } as const;
   return map[severity];

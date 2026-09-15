@@ -76,8 +76,8 @@ export const SCREENING_TOOLS: readonly ScreeningTool[] = [
     name: "Low mood",
     meta: "9 questions about interest, energy, sleep, and self-worth",
     minutes: 3,
-    status: "planned",
-    href: "/screening/gad7",
+    status: "available",
+    href: "/screening/phq9",
   },
   {
     code: "DASS-21",
