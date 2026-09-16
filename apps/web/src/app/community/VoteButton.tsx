@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Heart } from "lucide-react";
-import { cn } from "@/components/ui";
+import { cn, useToast } from "@/components/ui";
+import { useSession } from "@/components/SessionProvider";
 
 export interface VoteButtonProps {
   targetId: number;
@@ -17,12 +18,25 @@ export interface VoteButtonProps {
 // POSTed, nothing persists across reload, and there is no per-user dedupe.
 // That dedupe is server-side work tracked separately; when it lands, the real
 // mutation goes where `toggle` flips state and must be ready to revert.
+//
+// Guests can see the count but not react (docs/role-based-system-plan.md §2);
+// a tap explains why in a toast rather than doing nothing.
 export function VoteButton({ targetId, targetType, votes, size = "md" }: VoteButtonProps) {
+  const { isSignedIn } = useSession();
+  const { showToast } = useToast();
   const [isSupported, setIsSupported] = useState(false);
   const count = votes + (isSupported ? 1 : 0);
   const countLabel = `${count} ${count === 1 ? "person supports" : "people support"} this ${targetType}`;
 
   function toggle() {
+    if (!isSignedIn) {
+      showToast({
+        title: "Log in to show support",
+        description: "Reactions are saved to your account so they only count once.",
+        tone: "neutral",
+      });
+      return;
+    }
     setIsSupported((current) => !current);
   }
 
