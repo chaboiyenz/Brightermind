@@ -6,7 +6,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button, FormField, Input, Textarea } from "@/components/ui";
 import { registerPsychologist, type RegisterPsychologistInput } from "@/lib/api";
 import { isMockMode } from "@/lib/mock/mockMode";
-import { useMockRole } from "@/components/MockRoleProvider";
+import { useSession } from "@/components/SessionProvider";
 
 // Mock-mode retrofit (decision (b), docs/prototype-roadmap.md) — this route
 // is specifically the *psychologist* signup, so mock mode just sets the role
@@ -18,16 +18,16 @@ export function PsychologistSignupForm() {
 
 // No form fields, no real account, no unapproved-status workflow (that's a
 // real-backend concept) — purely a role-selection stand-in, reusing
-// MockRoleProvider's role state (useMockRole). Redirects to "/", matching
+// the app session (useSession). Redirects to /psych, matching
 // exactly where a real successful psychologist signup sends the user (see
 // RealPsychologistSignupForm below).
 function MockPsychologistSignupForm() {
   const router = useRouter();
-  const { setRole } = useMockRole();
+  const { signIn } = useSession();
 
   function handleContinue() {
-    setRole("psychologist");
-    router.push("/");
+    signIn("psychologist");
+    router.push("/psych");
   }
 
   return (
@@ -83,7 +83,7 @@ function RealPsychologistSignupForm() {
       // A newly-registered psychologist starts unapproved (Phase 4 builds
       // the approval workflow) — send them somewhere that says so rather
       // than straight into a page that assumes approved status.
-      router.push("/");
+      router.push("/psych");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
     } finally {

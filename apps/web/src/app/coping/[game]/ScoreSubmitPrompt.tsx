@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import { Button, ScoreRing, useToast } from "@/components/ui";
+import { useSession } from "@/components/SessionProvider";
 import { bestScore, readAttempts, saveAttempt, type GameAttempt } from "./gameAttempts";
 import { GAME_META, type GameSlug } from "./gameData";
+import { KeepProgressSheet } from "./KeepProgressSheet";
 
 interface ScoreSubmitPromptProps {
   readonly slug: GameSlug;
@@ -15,10 +17,14 @@ interface ScoreSubmitPromptProps {
 
 // Post-game reflection over a bare number (module 8 design note). Saving
 // writes to local attempt history; the toast wording stays the same once the
-// real endpoint replaces it.
+// real endpoint replaces it. Guests get the KeepProgressSheet instead of a
+// save (docs/role-based-system-plan.md §2) — the round itself is never
+// interrupted, only the save moment.
 export function ScoreSubmitPrompt({ slug, score, onReplay }: ScoreSubmitPromptProps) {
   const meta = GAME_META[slug];
+  const { isSignedIn } = useSession();
   const [hasSaved, setHasSaved] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [previousBest, setPreviousBest] = useState<number | null>(null);
   const { showToast } = useToast();
 
@@ -31,6 +37,10 @@ export function ScoreSubmitPrompt({ slug, score, onReplay }: ScoreSubmitPromptPr
 
   function handleSave() {
     if (hasSaved) return;
+    if (!isSignedIn) {
+      setIsSheetOpen(true);
+      return;
+    }
     const attempt: GameAttempt = {
       gameSlug: slug,
       score,
@@ -79,6 +89,12 @@ export function ScoreSubmitPrompt({ slug, score, onReplay }: ScoreSubmitPromptPr
           Back to coping
         </Link>
       </div>
+      {!isSignedIn && (
+        <p className="text-sm text-stone-600">
+          Playing as a guest. Save this round to see your progress over time.
+        </p>
+      )}
+      <KeepProgressSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
     </section>
   );
 }

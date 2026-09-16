@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { ToastProvider } from "@/components/ui";
 import { QueryProvider } from "@/components/QueryProvider";
-import { AuthRoleProvider } from "@/components/AuthRoleProvider";
-import { MockRoleProvider } from "@/components/MockRoleProvider";
+import { SessionProvider } from "@/components/SessionProvider";
 import { THEME_INIT_SCRIPT } from "@/components/site/themeStorage";
 import { SiteChrome } from "@/components/site/SiteChrome";
-import { isMockMode } from "@/lib/mock/mockMode";
 import "./globals.css";
 
 // docs/DESIGN.md typography: Plus Jakarta Sans for display/labels, Inter for body.
@@ -34,11 +32,6 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Prototype pivot (.references/roadmap/prototype-roadmap.MD): under
-  // NEXT_PUBLIC_MOCK_MODE, RoleGate is fed by a static role switcher instead
-  // of the real /auth/me/ check — no login, no token, no backend call.
-  const RoleProviderForMode = isMockMode() ? MockRoleProvider : AuthRoleProvider;
-
   return (
     // suppressHydrationWarning: the theme script below may stamp data-theme
     // before React hydrates, which is expected and must not be "repaired".
@@ -48,17 +41,17 @@ export default function RootLayout({
             user never sees a linen flash. See components/site/themeStorage.ts. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {/*
-          AuthRoleProvider wires RoleGate/RoleProvider to the real
-          GET /api/v2/auth/me/ endpoint (Phase 3) — replacing the mocked
-          role from Phase 0/2. Needs QueryProvider above it (it uses
-          React Query). Swapped for MockRoleProvider in mock mode — see above.
+          SessionProvider (docs/role-based-system-plan.md §4) owns "who is
+          signed in": the prototype role picked on /login, or the real
+          GET /api/v2/auth/me/ user when no prototype session exists. It feeds
+          RoleProvider so RoleGate keeps working. Needs QueryProvider above it.
         */}
         <QueryProvider>
-          <RoleProviderForMode>
+          <SessionProvider>
             <ToastProvider>
               <SiteChrome>{children}</SiteChrome>
             </ToastProvider>
-          </RoleProviderForMode>
+          </SessionProvider>
         </QueryProvider>
       </body>
     </html>

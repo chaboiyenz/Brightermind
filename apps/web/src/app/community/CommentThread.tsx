@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { Avatar, Button, Disclosure, Textarea } from "@/components/ui";
+import { useSession } from "@/components/SessionProvider";
+import { SignInPrompt } from "@/components/site/SignInPrompt";
 import { MOCK_CURRENT_USER, createLocalId, type Comment } from "@/lib/mock/community";
 import { VoteButton } from "./VoteButton";
 import { formatRelativeTime } from "./relativeTime";
@@ -23,6 +25,7 @@ export interface CommentThreadProps {
 // refetch, a real optimistic update), remount it with a `key` rather than
 // expecting prop changes to flow through.
 export function CommentThread({ postId, initialComments }: CommentThreadProps) {
+  const { isSignedIn } = useSession();
   const [comments, setComments] = useState<readonly Comment[]>(initialComments);
   const [draft, setDraft] = useState("");
 
@@ -66,6 +69,13 @@ export function CommentThread({ postId, initialComments }: CommentThreadProps) {
           </ol>
         )}
 
+        {!isSignedIn ? (
+          <SignInPrompt
+            title="Log in to reply"
+            description="Replies show your display name, never your real name."
+            className="px-4 py-3"
+          />
+        ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <label htmlFor={`reply-${postId}`} className="sr-only">
             Reply as {MOCK_CURRENT_USER.displayName}
@@ -85,6 +95,7 @@ export function CommentThread({ postId, initialComments }: CommentThreadProps) {
             </Button>
           </div>
         </form>
+        )}
       </div>
     </Disclosure>
   );

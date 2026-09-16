@@ -1,11 +1,21 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { CRISIS_HOTLINE } from "@/components/home/homeContent";
 import { BrandMark } from "./BrandMark";
+import { FooterSessionLink } from "./FooterSessionLink";
 import { FOOTER_PEOPLE_LINKS, FOOTER_TOOL_LINKS, HOTLINES_LINK, type SiteLink } from "./siteLinks";
 
 const FOOTER_LINK_CLASS = "text-sm text-stone-700 transition-colors hover:text-brand-700";
 
-function FooterColumn({ title, links }: { title: string; links: readonly SiteLink[] }) {
+function FooterColumn({
+  title,
+  links,
+  trailing,
+}: {
+  title: string;
+  links: readonly SiteLink[];
+  trailing?: ReactNode;
+}) {
   return (
     <nav aria-label={`Footer: ${title}`}>
       <p className="mb-3 font-display text-label-sm uppercase text-stone-600">{title}</p>
@@ -17,6 +27,7 @@ function FooterColumn({ title, links }: { title: string; links: readonly SiteLin
             </Link>
           </li>
         ))}
+        {trailing && <li>{trailing}</li>}
       </ul>
     </nav>
   );
@@ -38,7 +49,11 @@ export function SiteFooter() {
         </div>
 
         <FooterColumn title="Tools" links={FOOTER_TOOL_LINKS} />
-        <FooterColumn title="People" links={FOOTER_PEOPLE_LINKS} />
+        <FooterColumn
+          title="People"
+          links={FOOTER_PEOPLE_LINKS}
+          trailing={<FooterSessionLink className={FOOTER_LINK_CLASS} />}
+        />
 
         {/* Deliberately the most visually weighted footer column: the
             migration plan (module 16) notes the hotline directory is opened

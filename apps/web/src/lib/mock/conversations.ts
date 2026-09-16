@@ -1,3 +1,4 @@
+import { getMockPatients } from "./patients";
 import { getMockPsychologists } from "./psychologists";
 
 // Prototype pivot (.references/roadmap/prototype-roadmap.MD) — static data,
@@ -31,6 +32,35 @@ export interface Conversation {
 // id resolves to a real, empty conversation — that's how the empty state
 // stays reachable without a special-cased route.
 const MOCK_CONVERSATIONS: Record<number, Conversation> = {
+  // Psychologist's view of the thread with patient 201 (Bea Castillo).
+  201: {
+    partnerId: 201,
+    requestStatus: "accepted",
+    messages: [
+      {
+        id: 11,
+        senderId: 201,
+        content: "Hi Dr. Villanueva, sending my journal note before our call on Thursday.",
+        timestamp: "2026-09-15T18:02:00Z",
+        status: "read",
+      },
+      {
+        id: 12,
+        senderId: CURRENT_USER_ID,
+        content: "Thank you, Bea. How did the leaves-on-a-stream exercise feel this week?",
+        timestamp: "2026-09-15T18:40:00Z",
+        status: "read",
+      },
+      {
+        id: 13,
+        senderId: 201,
+        content:
+          "Easier than last time. I noticed I could let the exam thoughts pass instead of arguing with them.",
+        timestamp: "2026-09-16T07:15:00Z",
+        status: "pending",
+      },
+    ],
+  },
   1: {
     partnerId: 1,
     requestStatus: "accepted",
@@ -94,6 +124,13 @@ export function getMockConversation(partnerId: number): Conversation {
   );
 }
 
+// Partner ids: psychologists are 1–6, patients 201–206 (lib/mock/patients.ts),
+// so one route serves the student→psychologist and psychologist→patient
+// contexts without an id collision.
 export function getMockConversationPartnerName(partnerId: number): string | null {
-  return getMockPsychologists().find((p) => p.id === partnerId)?.name ?? null;
+  return (
+    getMockPsychologists().find((p) => p.id === partnerId)?.name ??
+    getMockPatients().find((p) => p.id === partnerId)?.name ??
+    null
+  );
 }

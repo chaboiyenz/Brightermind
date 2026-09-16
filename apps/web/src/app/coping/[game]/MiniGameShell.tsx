@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Clock, Play } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
+import { useSession } from "@/components/SessionProvider";
 import { MiniGameCanvas } from "./MiniGameCanvas";
 import { ScoreSubmitPrompt } from "./ScoreSubmitPrompt";
 import { GAME_META, type GameSlug } from "./gameData";
@@ -14,6 +15,7 @@ type Stage = { readonly kind: "intro" } | { readonly kind: "playing" } | { reado
 // and a replay that remounts the game without leaving the page.
 export function MiniGameShell({ slug }: { slug: GameSlug }) {
   const meta = GAME_META[slug];
+  const { isSignedIn, isLoading } = useSession();
   const [stage, setStage] = useState<Stage>({ kind: "intro" });
   const [playCount, setPlayCount] = useState(0);
 
@@ -33,6 +35,9 @@ export function MiniGameShell({ slug }: { slug: GameSlug }) {
           All coping techniques
         </Link>
         <div className="flex items-center gap-2">
+          {/* Guest trial (docs/role-based-system-plan.md §2): the game is fully
+              playable; only saving asks for an account. */}
+          {!isLoading && !isSignedIn && <Badge tone="warning">Trial</Badge>}
           <Badge tone="neutral">{meta.kind}</Badge>
           <Badge tone="brand">{meta.technique}</Badge>
         </div>

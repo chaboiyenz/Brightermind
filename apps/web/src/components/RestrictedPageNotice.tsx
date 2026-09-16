@@ -8,18 +8,17 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 /**
- * RoleGate fallback for whole-page gating (/dashboard, /admin/*). Composes the
- * shared EmptyState rather than introducing a new primitive. Under the
- * prototype's mock mode this is what you see until you pick the right role in
- * the bottom-left role switcher — it is a UX hint, not enforcement (see the
- * RoleGate docblock).
+ * Fallback for whole-route gating (AccessGate, the /psych/* workspace).
+ * Composes the shared EmptyState rather than introducing a new primitive. It
+ * is a UX hint, not enforcement (see the RoleGate docblock): the API must
+ * reject the same requests server-side.
  */
-export function RestrictedPageNotice({ allow }: { allow: Role[] }) {
+export function RestrictedPageNotice({ allow }: { allow: readonly Role[] }) {
   const audience = allow.map((role) => ROLE_LABEL[role]).join(" and ");
   return (
     <EmptyState
       title={`This page is for ${audience}`}
-      description="Your current role can't view it. In the prototype, use the role switcher in the bottom-left corner to preview this page as a different role."
+      description="Your current account can't view it. To preview it in the prototype, log out and pick the other role on the sign-in page."
     />
   );
 }

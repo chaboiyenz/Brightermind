@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Button, EmptyState, SkeletonCard } from "@/components/ui";
+import { useSession } from "@/components/SessionProvider";
+import { SignInPrompt } from "@/components/site/SignInPrompt";
 import type { Comment, Post } from "@/lib/mock/community";
 import { PostCard } from "./PostCard";
 import { PostComposer } from "./PostComposer";
@@ -19,7 +21,11 @@ export interface PostListProps {
 // the skeleton + "load more" affordance can be reviewed. Swap for React Query
 // cursor pagination against GET /api/v2/posts/ later; the composer's onPost
 // prepend becomes an optimistic cache update.
+//
+// Guests can read everything but not post (docs/role-based-system-plan.md
+// §2): the composer gives way to a calm sign-in invitation.
 export function PostList({ initialPosts, commentsByPost }: PostListProps) {
+  const { isSignedIn, isLoading } = useSession();
   const [posts, setPosts] = useState<readonly Post[]>(initialPosts);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -42,7 +48,14 @@ export function PostList({ initialPosts, commentsByPost }: PostListProps) {
 
   return (
     <div className="space-y-5">
-      <PostComposer onPost={handlePost} />
+      {isLoading ? null : isSignedIn ? (
+        <PostComposer onPost={handlePost} />
+      ) : (
+        <SignInPrompt
+          title="Reading as a guest"
+          description="Log in to share a post, reply, or support someone."
+        />
+      )}
 
       {visiblePosts.length === 0 ? (
         <EmptyState

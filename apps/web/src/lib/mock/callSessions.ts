@@ -1,3 +1,4 @@
+import { getMockPatients } from "./patients";
 import { getMockPsychologists } from "./psychologists";
 
 // Prototype pivot (.references/roadmap/prototype-roadmap.MD) — static data,
@@ -21,6 +22,10 @@ export interface MockCallSession {
 export function getMockCallSession(sessionId: string): MockCallSession | null {
   const partnerId = Number(sessionId);
   if (!Number.isInteger(partnerId)) return null;
-  const partner = getMockPsychologists().find((p) => p.id === partnerId);
+  // A patient joins at the psychologist's id (1–6); a psychologist starts a
+  // call at the patient's id (201–206, lib/mock/patients.ts).
+  const partner =
+    getMockPsychologists().find((p) => p.id === partnerId) ??
+    getMockPatients().find((p) => p.id === partnerId);
   return partner ? { sessionId, partnerName: partner.name } : null;
 }
