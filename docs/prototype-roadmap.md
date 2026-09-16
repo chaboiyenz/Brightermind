@@ -109,6 +109,14 @@ a real API.
   `isMockMode()` — since retrofitted onto `/mood`, `/journal`, `/tools/todo`,
   and `/about` too (see the open decision above, now resolved).
 
+- **Role-based shells (2026-09-16).** See `docs/role-based-system-plan.md`.
+  `/login` became a two-card role picker; signed-in patients keep the
+  website chrome (avatar menu, `/care`), psychologists get a sidebar
+  workspace at `/psych/*` that absorbed `/dashboard` and `/admin/*` (old URLs
+  redirect). Guests can still play games and coping activities; saving asks
+  them to sign in. Ground rule 2's "static role switcher" is now the login
+  page itself rather than a bottom-left control.
+
 ## Prototype Phase C — Social & communication
 
 - [x] Community feed (`/community`) — static posts/comments, vote button
