@@ -66,3 +66,10 @@ media/
 
 # Local reference material — not part of the app, see .references/*/README.md
 .references/
+
+# Playwright (apps/web) — run artifacts only; committed screenshot baselines
+# live under apps/web/e2e/**/*-snapshots/, which this does NOT match.
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
+apps/web/playwright/.cache/

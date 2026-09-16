@@ -13,16 +13,23 @@ const SEVERITY_LABEL: Record<Severity, string> = {
   severe: "Severe",
 };
 
-// Severity is ordinal, so it gets a single-hue sequential ramp (brand teal,
-// light -> dark from tailwind.config.ts) rather than one hue per band, and
-// deliberately not brick/red at the top, matching the GAD-7 result card's
-// "calm, non-alarming" rule. Each bar is also direct-labelled and named on
-// the axis, so identity never rests on color alone.
+// Severity is ordinal, so it gets a single-hue sequential ramp (brand,
+// light -> dark) rather than one hue per band, and deliberately not
+// brick/red at the top, matching the GAD-7 result card's "calm,
+// non-alarming" rule. Each bar is also direct-labelled and named on the
+// axis, so identity never rests on color alone.
+//
+// Tailwind `fill-*`/`stroke-*` classes, not inline hex — same brand-200/400/
+// 700/900 steps as before, but resolved through the CSS variables in
+// globals.css so the ramp re-themes for dark mode instead of staying frozen
+// at the light-theme values (the bug this replaced: the hex literals here
+// used to be a stale copy of the pre-redesign brand palette with no
+// dark-mode counterpart at all).
 const SEVERITY_FILL: Record<Severity, string> = {
-  minimal: "#A8C9C0", // brand-200
-  mild: "#549384", // brand-400
-  moderate: "#255950", // brand-700
-  severe: "#132C27", // brand-900
+  minimal: "fill-brand-200",
+  mild: "fill-brand-400",
+  moderate: "fill-brand-700",
+  severe: "fill-brand-900",
 };
 
 const CHART = {
@@ -72,7 +79,7 @@ export function SeverityDistributionChart({ severityCounts }: SeverityDistributi
           x2={CHART.width - CHART.paddingX}
           y1={baselineY}
           y2={baselineY}
-          stroke="#E4E1D9" // stone-200
+          className="stroke-stone-200"
           strokeWidth={1}
         />
         {SEVERITY_ORDER.map((key, index) => {
@@ -109,7 +116,7 @@ export function SeverityDistributionChart({ severityCounts }: SeverityDistributi
                 width={barWidth}
                 height={barHeight}
                 rx={CHART.barRadius}
-                fill={SEVERITY_FILL[key]}
+                className={SEVERITY_FILL[key]}
                 opacity={opacity}
                 style={{ transition: "opacity 0.15s ease" }}
               />
@@ -120,7 +127,7 @@ export function SeverityDistributionChart({ severityCounts }: SeverityDistributi
                   y={baselineY - CHART.barRadius}
                   width={barWidth}
                   height={CHART.barRadius}
-                  fill={SEVERITY_FILL[key]}
+                  className={SEVERITY_FILL[key]}
                   opacity={opacity}
                 />
               )}

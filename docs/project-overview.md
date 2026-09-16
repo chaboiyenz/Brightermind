@@ -1,288 +1,178 @@
 # BrighterMind v2 — Project Overview
 
-Last verified: 2026-09-13, by direct inspection of the repository at `D:\Brightermind 2.0` (branch `yenz`, HEAD `e3a1144`). This document is a standalone snapshot of the current, actual state of the codebase — not a narrative of how it got here. Every claim below was checked against the file(s) named; where a prior doc's claim was cross-checked and found stale, that is flagged explicitly in Section 6.
+Last verified: 2026-09-19, by direct inspection of the repository at `D:\Brightermind 2.0` (branch `fix/navbar-active-state`, which contains 100% of `dev` plus one small fix commit — `origin/dev` and local `dev` are identical, no divergence). This document is a standalone snapshot of the current, actual state of the codebase, superseding the 2026-09-13 version of this file — that version described `MockRoleProvider`, `FeatureGrid`, and a 23-route inventory that no longer exist. Every claim below was checked against the file(s) named.
+
+The redesign work reconciled here landed via four merged PRs between 2026-09-10 and 2026-09-16, by contributors "Gens" and "Daniel Pagilagan": #77/#80 ("redesignUI"/"redesingUI"), #84 ("boni" — screening tools, dark mode, animation), and #85 ("new-feature" — the full role-based auth/shell system). All are on `dev`, not stray unmerged work.
 
 ---
 
 ## 1. Tech stack — verified, not assumed
 
-### apps/web (`apps/web/package.json`)
+### Root (`package.json`)
+- `packageManager`: `pnpm@11.5.2`
+- `concurrently` `^10.0.5` (dev script orchestration)
+- No `engines` field; CI (`.github/workflows/*.yml`) pins Node `22` and Python `3.12`
 
+### `apps/web` (`apps/web/package.json`)
 - **Framework**: Next.js `15.1.6`, React `19.0.0` / React DOM `19.0.0`, TypeScript `5.7.3`
 - **Styling**: Tailwind CSS `3.4.17`, PostCSS `8.5.28`, Autoprefixer `10.5.5`
-- **Lint**: ESLint `9.18.0`, `eslint-config-next` `15.1.6`, `@eslint/eslintrc` `3.3.7`
-- **Type defs**: `@types/node` `22.10.7`, `@types/react` `19.0.7`, `@types/react-dom` `19.0.3`
+- **Testing — new since the last audit**: `vitest` `^3.2.7`, with `"test": "vitest run"` / `"test:watch": "vitest"` scripts. Real test files exist: `src/lib/session/access.test.ts`, `src/lib/session/sessionStorage.test.ts` — the new auth/routing logic is actually unit-tested, not just implemented.
+- **Theming — no library.** No `next-themes` or any theming package. Fully custom: CSS custom properties in `globals.css`, resolved through `tailwind.config.ts`, persisted via `localStorage` key `bm-theme` (`themeStorage.ts`), applied via a `data-theme` attribute set by an inline pre-hydration script.
+- Runtime deps unchanged from before: `@radix-ui/react-{collapsible,dialog,toast}`, `@tanstack/react-query` `^5.102.8`, `class-variance-authority` `^0.7.1`, `clsx`/`tailwind-merge` (inside `lib/cn.ts`), `lucide-react` `^1.41.0`.
 
-Runtime dependencies:
+### `apps/api`
+- Settings module is package-style: `apps/api/config/settings/{base,dev,prod}.py` (not a flat `settings.py`).
+- `base.txt`: `Django==5.1.6`, `djangorestframework==3.15.2`, `django-cors-headers==4.9.0`, `django-environ==0.12.0`, `channels==4.2.0`, `psycopg[binary]==3.2.4`, `drf-spectacular==0.30.0`.
+- `dev.txt` adds `pytest`, `pytest-django`, `pytest-cov`, `ruff`, `django-stubs`. `prod.txt` adds `gunicorn`, `uvicorn[standard]`, `channels-redis`.
+- `INSTALLED_APPS` local apps: `core`, `accounts`, `screening`, `mood_tracker`, `journal`, `tasks`, `content`, `coping_techniques`, `chat`, `community`, `hotlines`, `feedback`.
+- Auth: DRF `TokenAuthentication`, `IsAuthenticated` default permission. `AUTH_USER_MODEL = "accounts.User"`.
+- DB is Postgres-shaped (`psycopg` installed, `prod.py` sets `sslmode=require`) but **local `.env`/CI both actually run SQLite** (`DATABASE_URL=sqlite:///db.sqlite3`).
+- `channels` is installed and wired (`ASGI_APPLICATION`, `CHANNEL_LAYERS`) but **no `consumers.py`/`routing.py` exists anywhere** — installed and unused, the same dead-dependency pattern `docs/audit-findings.md` flagged in v1.
 
-| Package | Version | Verified usage |
+---
+
+## 2. Auth/session system
+
+### 2.1 Intended design (`docs/role-based-system-plan.md`, PR #85's own spec)
+
+Three shells by session state: **guest** → public website with a trial of coping techniques/games; **patient** (role `student`) → same website chrome, now with an avatar menu and a personalised `/home`; **psychologist**/**admin** → a left-sidebar workspace at `/psych/*` that absorbs the old `/dashboard` and `/admin/*`. Login is bypassed in prototype mode via two role cards on `/login`. Guests get a real trial for coping/games (gated only at the *save* moment via a "Keep your progress" sheet), but screening/mood/journal/etc. are a hard sign-in gate from the first click. Shell selection happens once, in `SiteChrome`, keyed by pathname + session — not via Next.js route groups.
+
+### 2.2 Actual implementation — confirmed by reading the code
+
+- **Roles are unchanged**: `Role = "student" | "psychologist" | "admin"` (`components/ui/RoleGate.tsx`). "Patient" is UI copy for the `student` role, not a new role — no renaming happened.
+- **`MockRoleProvider` (the old bottom-left "Prototype role" switcher) is deleted outright**, not extended. Replaced by `SessionProvider` (`components/SessionProvider.tsx`) + `AccessGate` (`components/site/AccessGate.tsx`) + `lib/session/{access,sessionStorage}.ts`.
+- **Session shape**: `PrototypeSession = { role: Role; isSignedIn: boolean }` — a real, distinct signed-in flag, not implied by role selection.
+- **Storage**: `localStorage`, keys `bm_mock_role` and `bm_session_signed_in` (`sessionStorage.ts`). This is a real discrepancy worth flagging: `role-based-system-plan.md` §4 says the plan was to keep `bm_mock_role` plus add `bm_mock_signed_in` — the shipped key is `bm_session_signed_in`, and `MockRoleProvider` was deleted rather than extended as the plan said. Corrected in `docs/prototype-roadmap.md`.
+- **Sign-in**: only via `/login`'s `RoleEntryCards` (two cards: "I'm here for myself" / "I'm a psychologist") calling `useSession().signIn(role)`, which writes both localStorage keys and redirects via `postLoginDestination()`. The old real-mode username/password form still exists on the same page, collapsed, and still works against the real API — it does not touch the prototype session.
+- **Sign-out**: `AvatarMenu`'s "Log out" calls `signOut()`, which clears both localStorage keys and does a **hard navigation** to `/` (`window.location.assign`), deliberately not a state update — avoids a race with `AccessGate` redirecting the now-guest user mid-navigation.
+- **Guest/logged-out state is real and is the default.** `GUEST_SESSION = { role: "student", isSignedIn: false }`. A fresh visitor with empty `localStorage` is a guest; `AccessGate` actively enforces this by redirecting to `/login?next=<path>` for any gated route.
+- **Route protection**: `AccessGate` wraps `children` in `SiteChrome`, computing `getAccessDecision(pathname, session)` from `lib/session/access.ts`. Three outcomes: `allow`, `redirect` (to `/login?next=...` or a legacy URL), `forbidden` (renders `RestrictedPageNotice`). This is UX routing only — explicitly documented as not a security boundary; the API must enforce the same rules server-side (it currently doesn't have role-aware endpoints to enforce against yet).
+- **Real-mode fallback**: when not in mock mode and no local session exists, `SessionProvider` calls the real `GET /api/v2/auth/me/`-equivalent (`fetchCurrentUser`) exactly as the old `AuthRoleProvider` did — this path is untouched by the redesign.
+
+### 2.3 Gating rules, exactly as coded (`lib/session/access.ts`)
+
+| Rule array | Prefixes | Effect |
 |---|---|---|
-| `@radix-ui/react-collapsible` | ^1.1.20 | `components/ui/Disclosure.tsx` — used |
-| `@radix-ui/react-dialog` | ^1.1.23 | `components/ui/Modal.tsx` — used |
-| `@radix-ui/react-toast` | ^1.2.23 | `components/ui/Toast.tsx` — used |
-| `@tanstack/react-query` | ^5.102.8 | 11 files, incl. real-auth login flow (`LoginForm.tsx`'s `useQueryClient`) — used |
-| `class-variance-authority` | ^0.7.1 | `Button.tsx`, `Badge.tsx` variant styling — used |
-| `clsx` | ^2.1.1 | consumed inside `lib/cn.ts` (the shared `cn()` helper) — used |
-| `lucide-react` | ^1.41.0 | 13 files (icons across UI kit and pages) — used |
-| `next` | 15.1.6 | app framework |
-| `react` / `react-dom` | 19.0.0 | framework |
-| `tailwind-merge` | ^3.6.0 | consumed inside `lib/cn.ts` alongside `clsx` — used |
+| `AUTH_PREFIXES` | `/login`, `/signup` | shell = `"auth"` (`MinimalSiteHeader`, no footer) |
+| `SIGNED_IN_PREFIXES` | `/screening`, `/mood`, `/journal`, `/tools`, `/profile`, `/psychologists`, `/messages`, `/call`, `/care`, `/home` (+ all of `/psych`) | guest → redirect to `/login?next=` |
+| `PATIENT_ONLY_PREFIXES` | `/screening`, `/mood`, `/journal`, `/tools`, `/profile`, `/psychologists`, `/care`, `/home` | forbidden for psychologist/admin |
+| `PSYCH_PREFIXES` | `/psych` | forbidden for student |
+| `LEGACY_REDIRECTS` | `/dashboard`, `/admin/patients`, `/admin/analytics`, `/admin/psychologists` | hard `redirect()` to the `/psych/*` equivalent, regardless of session |
 
-No dead/unused dependency was found in `apps/web` — everything in `package.json` has at least one real import site.
+`/messages` and `/call` are signed-in-gated but **not** patient-only — both roles reach them, correctly, since psychologists message/call patients from their own workspace.
 
-### apps/api
+**Everything not in any array is not gated at all.** Confirmed ungated: `/`, `/about`, `/resources/hotlines` (intentionally public), and the entire `/coping/**` tree including `/coping/[game]` (intentionally a guest trial, per an explicit code comment in `access.ts`).
 
-Dependency files: `apps/api/requirements/base.txt`, `dev.txt`, `prod.txt` (no `pyproject.toml`-based dependency list — `pyproject.toml` only configures `ruff` and `pytest`).
+**Gap found in this audit — flagged, not fixed**: `/community` is **not gated**, even though it's wired into both `PATIENT_NAV` and `PSYCH_NAV` as if it were a members-only feature, and has a real post/comment composer. Unlike `/coping`, there is no comment anywhere marking this as an intentional guest trial (the plan's §2 access matrix even says guests get "read only", not full unauthenticated access) — this reads as an oversight, not a decision, and needs one.
 
-**base.txt** (every environment):
-```
-Django==5.1.6
-djangorestframework==3.15.2
-django-cors-headers==4.9.0
-django-environ==0.12.0
-channels==4.2.0
-psycopg[binary]==3.2.4
-drf-spectacular==0.30.0
-```
-**dev.txt** (adds): `pytest==8.3.4`, `pytest-django==4.9.0`, `pytest-cov==7.1.0`, `ruff==0.9.4`, `django-stubs==6.1.0`
-**prod.txt** (adds): `gunicorn==23.0.0`, `uvicorn[standard]==0.34.0`, `channels-redis==4.3.0`
+### 2.4 Nav visibility — is "hide links until signed in" already solved?
 
-Cross-checked against `apps/api/config/settings/base.py`:
-- `INSTALLED_APPS` includes `channels`, and `ASGI_APPLICATION = "config.asgi.application"` is set, and `CHANNEL_LAYERS` is configured (in-memory in dev, `channels_redis` in prod).
-- **However, Channels is installed and wired at the settings level but not actually used anywhere**: there is no `consumers.py` or `routing.py` anywhere in the codebase (`find . -iname consumers.py -o -iname routing.py` returns nothing outside `.venv`). No websocket routes exist. This mirrors the same "installed and fully unused" pattern the v1 audit (`docs/audit-findings.md`) flagged for Django Channels in the old codebase — it has recurred in v2.
-- `INSTALLED_APPS`'s local apps: `apps.core`, `apps.accounts`, `apps.screening`, `apps.mood_tracker`, `apps.journal`, `apps.tasks`, `apps.content`, `apps.coping_techniques`, `apps.chat`, `apps.community`, `apps.hotlines`, `apps.feedback` — 12 local Django apps exist.
-- **`apps/api/config/urls.py` only wires up 5 of those 12 apps' URLs**: `mood_tracker`, `accounts`, `journal`, `tasks`, `content` (all under `/api/v2/`), plus `/admin/`, `/api/health/`, `/api/schema/`, `/api/docs/`. **`screening`, `coping_techniques`, `chat`, `community`, `hotlines`, and `feedback` have Django app scaffolding (models, migrations) but no URL routing at all** — no real endpoints exist for any of these six domains yet. This directly explains why the corresponding web routes (Section 3) are mock-only with no real/mode-aware option.
+**Yes, for the top-level nav.** `SiteHeader.tsx` picks `PATIENT_NAV` vs `PRIMARY_NAV` from `isSignedIn` (`const navLinks = isPatient ? PATIENT_NAV : PRIMARY_NAV`) and swaps the right-hand controls: guests get a "Log in" icon + coral "Book a session" button; signed-in patients get a notification bell + `AvatarMenu` instead. Psychologists/admins never see `SiteHeader` at all — `SiteChrome` renders `PsychShell` (a different sidebar component) for that shell, so there's no shared-header logic to leak between roles.
 
-### Database — verbatim config
-
-`apps/api/config/settings/base.py`:
-```python
-DATABASES = {
-    "default": env.db("DATABASE_URL"),
-}
-```
-This is genuinely Postgres-capable in principle (`psycopg[binary]==3.2.4` is a real dependency, and `env.db()` parses whatever URL scheme is given), and `prod.py` adds `DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}` — a Postgres-only option, confirming production is meant to run on RDS Postgres.
-
-**But in practice, right now, both local dev and CI run on SQLite**, not Postgres:
-- `apps/api/.env` (the actual local file) and `.env.example`: `DATABASE_URL=sqlite:///db.sqlite3`
-- `.github/workflows/ci.yml`'s Python job: `DATABASE_URL: sqlite:///db.sqlite3`
-- A `db.sqlite3` file (192KB) is present and actively used at `apps/api/db.sqlite3`.
-
-So: **Postgres-configured for production by design, SQLite in actual day-to-day dev/CI use.** No Postgres instance is provisioned anywhere in this repo today (`infra/terraform/` is an empty scaffold — see Section 2).
-
-### Versions / tooling requirements
-
-- **pnpm**: pinned via root `package.json`'s `"packageManager": "pnpm@11.5.2"`; lockfile is `lockfileVersion: '9.0'` (`pnpm-lock.yaml`).
-- **Node**: `.github/workflows/ci.yml` pins `node-version: 22` for the JS job (no `engines` field in either `package.json`).
-- **Python**: `.github/workflows/ci.yml` pins `python-version: "3.12"`; `apps/api/pyproject.toml`'s `[tool.ruff] target-version = "py312"` confirms the same target.
+Guest nav (`PRIMARY_NAV`): Screening · Coping · Games · Counselling · Community — all in-page anchors on `/`.
+Patient nav (`PATIENT_NAV`): Home · Screening · Coping · Games · My care · Community — real routes.
 
 ---
 
-## 2. Repository structure — as it exists on disk right now
+## 3. Design system — one coherent system with a genuine repaint, not two clashing ones, with two real exceptions
 
-```
-D:\Brightermind 2.0/
-├── .github/
-│   ├── CODEOWNERS
-│   ├── dependabot.yml
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   ├── pull_request_template.md
-│   └── workflows/
-│       ├── ci.yml
-│       ├── dependabot-automerge.yml
-│       ├── deploy-dev.yml
-│       ├── deploy-prod.yml
-│       └── deploy-stage.yml
-├── .references/                      # design/audit reference material, not app code
-│   ├── UI Library/brightermind-ui-lib/
-│   ├── _asset-audit/ (REPORT.md, home-page-media/, icons/, logo/, other/)
-│   ├── brightermind-missing-docs/
-│   └── roadmap/roadmap.MD
-├── apps/
-│   ├── api/                          # Django 5.1 + DRF backend
-│   │   ├── apps/                     # 12 local Django apps (see §1)
-│   │   ├── config/                   # settings (base/dev/prod), urls.py, asgi.py, wsgi.py
-│   │   ├── requirements/             # base.txt, dev.txt, prod.txt
-│   │   ├── tests/
-│   │   ├── db.sqlite3                # active local dev DB
-│   │   ├── manage.py
-│   │   └── pyproject.toml
-│   ├── mobile/                       # EMPTY SCAFFOLD — no real code
-│   │   ├── README.md
-│   │   ├── assets/.gitkeep
-│   │   └── src/{components,lib,screens}/.gitkeep
-│   └── web/                          # Next.js 15 + React 19 frontend
-│       ├── public/
-│       └── src/
-│           ├── app/                  # 23 routes — see §3
-│           ├── components/
-│           │   ├── ui/               # 14 design-system primitives — see §4
-│           │   ├── MockRoleProvider.tsx, AuthRoleProvider.tsx, RestrictedPageNotice.tsx
-│           │   └── home/ (SiteHeader, SiteFooter, CrisisBanner, FeatureGrid, hotlinesData.ts, etc.)
-│           └── lib/
-│               ├── api/              # real API client (client, auth, mood, journal, tasks, content, health)
-│               ├── mock/             # 14 mock-data fixture files + mockMode.ts flag
-│               └── cn.ts
-├── docs/                             # see file list below
-├── infra/
-│   ├── README.md
-│   └── terraform/.gitkeep            # EMPTY SCAFFOLD — no actual Terraform/CDK code
-├── packages/
-│   └── shared/
-│       ├── README.md
-│       └── src/.gitkeep              # EMPTY SCAFFOLD — no generated types yet
-├── scripts/
-│   ├── dev-api.mjs
-│   └── setup-oidc.sh
-├── package.json                      # root workspace scripts (pnpm workspaces)
-├── pnpm-workspace.yaml               # packages: apps/*, packages/*
-├── pnpm-lock.yaml
-├── README.md
-└── TDD.MD
-```
+**This is the headline finding.** `tailwind.config.ts` was **fully rewritten**, not left alone with a CSS-variable layer bolted on top. Every color utility (`brand`, `stone`, `clay`, `sage`, `brick`) is generated by a `scale()` helper that maps each step to `rgb(var(--brand-600) / <alpha-value>)` — Tailwind classes now *are* the CSS-variable system, not a separate thing sitting beside it. Same token **names** as before the redesign; the actual **values** were repainted (e.g. `brand-600` moved from a teal `#2F6F62` to a forest green `rgb(69 102 77)` / `#45664D` in light mode) — a genuine visual redesign, not a technical refactor. New additions: a `display` font (Plus Jakarta Sans, for headings/buttons), a named type scale (`display`, `display-sm`, `headline-{lg,md,sm}`, `label-{lg,md,sm}`), a wider radius scale (`sm` 4px → `2xl` 24px, replacing a 3-step scale), theme-aware shadow tokens (`shadow-soft`/`shadow-float`/`shadow-coral`), and animation keyframes for specific new widgets (`breathe` for the breathing pacer, `drift` for the defusion game's leaves).
 
-**Confirmed by direct listing:**
-- `apps/mobile` — still an empty scaffold: only a README and `.gitkeep` placeholders in `assets/`, `src/components/`, `src/lib/`, `src/screens/`. No Expo project, no `package.json`, no real screens.
-- `packages/shared` — only `README.md` and `src/.gitkeep`. No generated types, no build pipeline. README itself says "scaffold only — generation pipeline not yet wired up."
-- `infra/` — only `README.md` and `terraform/.gitkeep`. No Terraform or CDK files exist. README itself says "empty scaffold — infra decisions are not yet final."
-- `docs/` contents (full listing): `CODEMAPS/` (empty except `.gitkeep`), `TDD.md`, `audit-findings.md`, `ci-cd/environment-setup.md`, `frontend-migration-plan.md`, `pre-migration-tickets.md`, `prototype-roadmap.md`, `roadmap.md`.
-- `.github/` contents (full listing): `CODEOWNERS`, `dependabot.yml`, `ISSUE_TEMPLATE/bug_report.md`, `ISSUE_TEMPLATE/feature_request.md`, `pull_request_template.md`, `workflows/ci.yml`, `workflows/dependabot-automerge.yml`, `workflows/deploy-dev.yml`, `workflows/deploy-stage.yml`, `workflows/deploy-prod.yml`.
+The actual color values live in `src/app/globals.css` as RGB triplets, one block for light ("Serene Restorative Sanctuary") and one for dark ("Evening Pine"), resolved by: bare `:root` = light, `@media (prefers-color-scheme: dark)` applies dark unless `data-theme="light"` is set, `data-theme="dark"` forces dark, and a `.theme-dark` class scopes dark styling to one subtree (used for surfaces that are dark-by-design regardless of theme, e.g. the video call room). This is documented in a new `docs/DESIGN.md` (Material-Design-token-shaped YAML front matter, 262 lines) which **is itself accurate** — it matches the code exactly, including the `bm-theme` storage key.
+
+**Component-library consistency — genuinely mixed, but the mechanism means most of it rides along for free:**
+- `Button.tsx`, `Card.tsx`, `Badge.tsx`, `ScoreRing.tsx` were **explicitly updated** to the new shape language: pill buttons (`rounded-full`), 20px card radius (`rounded-xl` per the new scale), `font-display` on titles/buttons, `shadow-soft`. `Button`'s own docblock now cites `docs/DESIGN.md` by name.
+- `Input.tsx`/`FormField`/`Table.tsx` were **not visually refreshed** but aren't broken either — they use token names (`border-stone-300`, `focus:ring-brand-500`) that resolve through the new CSS vars automatically, they just never got the newer pill/shadow treatment (arguably correct — forms and tables aren't supposed to look like marketing buttons).
+- **The two exceptions found in the previous audit are fixed (2026-09-19, demo-polish pass):**
+  1. `components/ui/Modal.tsx` and `components/ui/Toast.tsx` now use `shadow-float` (the same theme-aware token `AvatarMenu`'s dropdown already used) instead of raw Tailwind `shadow-lg`/`shadow-md`. Verified in both themes via Playwright screenshots (`e2e/theme.spec.ts`) — see §5.
+  2. `src/app/psych/analytics/SeverityDistributionChart.tsx`'s bar fills and baseline stroke now use Tailwind `fill-brand-{200,400,700,900}`/`stroke-stone-200` classes instead of hardcoded hex literals, so they resolve through the same CSS variables as everything else and correctly invert the ramp direction in dark mode (confirmed by screenshot — light theme goes light→dark green low→high severity, dark theme correctly goes dark→light). No `MOOD_LEVELS`-style documented exception was needed here, unlike that case: this was plain SVG with no chart-library constraint forcing literal hex, so full conversion was possible.
+
+**Verdict, plainly, as asked**: this is **one coherent design system that got a real repaint**, executed well at the primitive level (`Button`/`Card`/`ScoreRing` and every new section component consume the token/CSS-var mechanism correctly and consistently) — not two systems awkwardly coexisting. The two components and one chart that were missed by the retheme pass are now fixed; the design system has no known theme-inconsistent surfaces as of this audit.
 
 ---
 
-## 3. Routes — full current inventory
+## 4. Full route inventory (current)
 
-Every directory under `apps/web/src/app/` containing a `page.tsx`, classified by direct inspection of that page and its immediate child components for `isMockMode()`, `@/lib/api` / `fetch` usage, and `@/lib/mock/` usage.
+Legend — **Mode**: `real` (calls `@/lib/api`, no mock branch) · `mock-aware` (branches on `isMockMode()`) · `mock-only` (fully static/mock, no live-API path at all yet) · `redirect` (no UI, pure `redirect()`). **Gate**: shell from `access.ts`, or "—" if ungated.
 
-| Route | Classification | Evidence |
-|---|---|---|
-| `/` | **Mode-aware** | `page.tsx` imports `fetchContentBlock` from `@/lib/api` and `isMockMode`; returns `HOME_FALLBACK` when mock mode is on or the real fetch fails |
-| `/about` | **Mode-aware** | Same pattern — `fetchContentBlock` + `isMockMode()` + `ABOUT_FALLBACK` |
-| `/login` | **Mode-aware** | `LoginForm.tsx` explicitly branches: `if (isMockMode()) return <MockLoginForm />; return <RealLoginForm />;` — mock form sets a role via `MockRoleProvider`; real form calls `login()` against `@/lib/api` |
-| `/signup` | **Mode-aware** | `SignupForm.tsx`: `if (isMockMode()) return <MockSignupForm />;` else calls `registerStudent` from `@/lib/api` |
-| `/signup/psychologist` | **Mode-aware** | `PsychologistSignupForm.tsx`: same pattern with `registerPsychologist` |
-| `/journal` | **Mode-aware** | `page.tsx`/`JournalApp.tsx`: `isMockMode()` branches between `getMockJournalEntries()` and `fetchJournalEntries` from `@/lib/api` |
-| `/mood` | **Mode-aware** | `page.tsx`/`MoodCalendar.tsx`: `isMockMode()` branches between `getMockMoodEntries()` and `fetchMoodEntries` |
-| `/tools/todo` | **Mode-aware** | `page.tsx`/`TaskList.tsx`: `isMockMode()` branches between `getMockTasks()` and `fetchTasks` |
-| `/screening/gad7` | **Static/mocked** | `Gad7Questionnaire.tsx` has no `@/lib/api` or `@/lib/mock` import at all — it's pure local `useState`; submission is explicitly commented "Mocked submission — no POST to apps/api under this prototype track" |
-| `/resources/hotlines` | **Static/mocked** | Renders a hardcoded `HOTLINES` array from `@/components/home/hotlinesData.ts`; no API, no mock-lib import, no mock-mode branch — always the same data |
-| `/coping/exercise` | **Static/mocked** | No `@/lib/api`/`@/lib/mock` import; static routine library data, `RoutineTimerModal` is a working client-only timer with no persistence |
-| `/coping/yoga` | **Static/mocked** | Same pattern as `/coping/exercise` |
-| `/coping/spirituality` | **Static/mocked** | Static content list; `BreathingTimer` is a working client-only timer |
-| `/coping/aromatherapy` | **Static/mocked** | Same pattern |
-| `/coping/[game]` | **Static/mocked** | `gameData.ts` defines 4 slugs (`defusion`, `distraction`, `mind-management`, `body-scan`); only `defusion` has real gameplay in `MiniGameCanvas.tsx`, the other 3 render a placeholder shell. Score submission is mocked. |
-| `/profile` | **Static/mocked** | `page.tsx` calls `getMockProfile()` only — no `isMockMode()` check, no real fetch path exists at all (comment: "swapping `getMockProfile` for the real profile + scores fetch is the only change needed later") |
-| `/psychologists` | **Static/mocked** | Calls `getMockPsychologists()` only, no real fetch path |
-| `/dashboard` | **Static/mocked (with mode-aware role gating)** | Page content comes from `getMockInbox()` only (no real data path); the surrounding `RoleGate allow={["psychologist"]}` is fed by `MockRoleProvider` in mock mode and `AuthRoleProvider` in real mode (switched in `app/layout.tsx`), so *access control* is mode-aware even though the *data* is mock-only |
-| `/admin/patients` | **Static/mocked (with mode-aware role gating)** | `getMockPatients()` only; `RoleGate allow={["admin"]}` — same nuance as `/dashboard` |
-| `/admin/analytics` | **Static/mocked (with mode-aware role gating)** | `getMockAnalytics()` only; same `RoleGate` nuance |
-| `/admin/psychologists` | **Static/mocked (with mode-aware role gating)** | `getMockPendingPsychologists()` only; `ApprovalRow.tsx`'s `handleDecide("approved"/"rejected")` only mutates local component state — no API call exists to make it real (confirmed no approve/reject endpoint anywhere in `apps/api`) |
-| `/community` | **Static/mocked** | `getMockPosts()`/`getMockComments()` only; vote button is "optimistic UI only, no real dedupe/persistence" per its own comment |
-| `/messages/[partnerId]` | **Static/mocked** | Imports only from `@/lib/mock/conversations`; `MessageStatusControls.tsx` uses `RoleGate allow={["psychologist"]}` for UI-only gating of controls, but there is no real messaging backend at all |
-| `/call/[sessionId]` | **Static/mocked** | `getMockCallSession()` only — a static call-UI shell, no real video integration |
+| Route | Mode | Gate | Nav |
+|---|---|---|---|
+| `/` | mock-aware | — (redirects signed-in users to their home) | `PRIMARY_NAV` |
+| `/about` | mock-aware | — | `FOOTER_PEOPLE_LINKS` |
+| `/resources/hotlines` | mock-only | — | `HOTLINES_LINK` |
+| `/login` | mock-only | auth | `LOGIN_LINK` |
+| `/signup` | mock-only | auth | linked only from `/login` |
+| `/signup/psychologist` | mock-only | auth | linked only from `/login`/`/signup` |
+| `/community` | mock-only | **— (see §2.3 gap)** | `PRIMARY_NAV`, `PATIENT_NAV`, `PSYCH_NAV` |
+| `/screening/gad7`, `/phq9`, `/dass21`, `/who5` | mock-only, **not persisted** | signed-in, patient-only | not in nav; linked from home page content |
+| `/mood` | mock-aware | signed-in, patient-only | `PATIENT_MENU_LINKS`, footer |
+| `/journal` | mock-aware | signed-in, patient-only | `PATIENT_MENU_LINKS`, footer |
+| `/tools/todo` | mock-aware | signed-in, patient-only | `PATIENT_MENU_LINKS`, footer |
+| `/profile` | mock-only | signed-in, patient-only | `PATIENT_MENU_LINKS` |
+| `/psychologists` | mock-only | signed-in, patient-only | `BOOK_LINK` |
+| `/messages/[partnerId]` | mock-only | signed-in (both roles) | reached via CTAs, not nav |
+| `/call/[sessionId]` | mock-only | signed-in (both roles) | reached via CTAs, not nav |
+| `/care` | mock-only | signed-in, patient-only | `PATIENT_NAV` ("My care") |
+| `/home` | mock-only | signed-in, patient-only; also the post-login patient landing | `PATIENT_NAV` ("Home") |
+| `/coping`, `/coping/exercise`, `/coping/yoga`, `/coping/aromatherapy`, `/coping/spirituality`, `/coping/[game]` | mock-only | — (intentional guest trial) | `PATIENT_NAV` ("Coping"/"Games") for the index; children reached via cards |
+| `/dashboard`, `/admin/patients`, `/admin/analytics`, `/admin/psychologists` | redirect | — (`LEGACY_REDIRECTS` fires first) | dead URLs, not in nav |
+| `/psych` | mock-only | psych-only; post-login psych landing | `PSYCH_NAV` ("Overview") |
+| `/psych/patients`, `/psych/patients/[id]` | mock-only | psych-only | `PSYCH_NAV` ("Patients") / reached via table rows |
+| `/psych/inbox` | mock-only | psych-only | `PSYCH_NAV` ("Inbox") |
+| `/psych/sessions` | mock-only | psych-only | `PSYCH_NAV` ("Sessions") |
+| `/psych/screenings` | mock-only | psych-only | `PSYCH_NAV` ("Screenings") |
+| `/psych/analytics` | mock-only | psych-only | `PSYCH_NAV` ("Analytics") |
+| `/psych/approvals` | mock-only, confirmed a real working page (not a stub) | psych-only | `PSYCH_NAV` ("Approvals") |
+| `/psych/settings` | mock-only | psych-only | `PSYCH_NAV` ("Settings") |
 
-**No inconsistencies found** between what each page's own comments claim and what it actually does — every mock-only page's code comments openly describe it as static/prototype (e.g. `/profile`, `/community`, `/dashboard`), rather than falsely claiming mock-mode support it doesn't have. The one genuine nuance worth calling out for anyone relying on this table: the four admin/dashboard pages and `/messages/[partnerId]` are **mode-aware only for role-gating** (real auth checks the real role in real mode, `MockRoleProvider` fakes it in mock mode) **but mock-only for their actual data** — there is no real backend endpoint behind any of them yet (confirmed: `screening`, `coping_techniques`, `chat`, `community`, `hotlines`, `feedback` Django apps have no URL routing in `config/urls.py`, and no approve/reject endpoint exists for psychologists).
+Only 6 routes have any live-API code path at all (`/`, `/about`, `/mood`, `/journal`, `/tools/todo`, plus real-mode `/login`) — everything else, including the entire `/psych/*` workspace, `/home`, `/care`, `/community`, and all four screening tools, is mock-only today. No `route.ts` API handlers exist under `apps/web/src/app` — all "real" calls hit the separate `apps/api` Django backend.
 
 ---
 
-## 4. Design system — as actually implemented
+## 5. Known gaps and inconsistencies found in this audit
 
-### `apps/web/tailwind.config.ts` — full theme
+1. ~~`/community` ungated despite being nav-linked as a members feature~~ — **checked, not a bug (2026-09-19)**. Every interactive action (`VoteButton.tsx`, `CommentThread.tsx`, `PostList.tsx`) already checks `useSession().isSignedIn` and shows a `SignInPrompt`/toast instead of acting — guests get exactly the "read only" access the plan's own matrix specifies, already covered by `access.test.ts`. The only real gap was that `lib/session/access.ts` had no comment saying so (unlike `/coping`'s explicit one) — added one, no behavior changed.
+2. **Screening tools (`/screening/*`) persist nothing** — client-side scoring only, no write to `lib/api` or `lib/mock`, despite being gated as if they were a real per-user feature like `/mood`/`/journal`. Still open.
+3. ~~`Modal`/`Toast` use raw `shadow-lg`/`shadow-md`~~ — **fixed (2026-09-19)**, see §3.
+4. ~~`SeverityDistributionChart.tsx` hardcodes stale pre-redesign hex values~~ — **fixed (2026-09-19)**, see §3.
+5. **`ScreeningSection.tsx`'s `ToolRow`** uses a fixed 64px column for the instrument code; "DASS-21" (7 characters) wraps onto two lines while GAD-7/PHQ-9/WHO-5 (5 characters) don't — a small, confirmed-by-screenshot visual bug. Still open — found again during the 2026-09-19 demo-path walkthrough but out of that pass's bounded scope (see §7).
+6. **Guest-facing screening copy overpromises**: the home hero's "Take a 2-minute check-in" CTA and the `Gad7Preview` live-question mockup both imply instant guest access, but every screening link hard-redirects a guest to `/login` first (correctly, per the access matrix) — inconsistent with the *actual* guest trial coping techniques/games get. Not a bug against the written plan, but a real UX/copy mismatch worth a decision. Still open.
+7. **`role-based-system-plan.md` §4 is stale against its own "Implemented" claim** — see §2.2's key-name discrepancy. Corrected in `docs/prototype-roadmap.md`, not edited in `role-based-system-plan.md` itself (left as the historical plan document).
 
-**Color palette** (all defined under `theme.extend.colors`):
+---
 
-| Family | Shades |
+## 6. Doc inventory and staleness (see `docs/prototype-roadmap.md` and `docs/roadmap.md` for the corrections themselves)
+
+| Doc | Status |
 |---|---|
-| `brand` (primary interactive — deep pine teal) | 50 `#EEF4F2`, 100 `#D3E4DF`, 200 `#A8C9C0`, 300 `#7CAE9F`, 400 `#549384`, 500 `#3A7A6B`, 600 `#2F6F62` (primary), 700 `#255950`, 800 `#1C433C`, 900 `#132C27` |
-| `stone` (background/text neutrals — warm off-white) | 25 `#FDFCFA`, 50 `#FAF9F6`, 100 `#F2F0EB`, 200 `#E4E1D9`, 300 `#CBC6B9`, 600 `#6B6659`, 700 `#4A463C`, 800 `#332F28`, 900 `#2B2A28` (primary text) |
-| `clay` (sparing warm accent — desaturated clay) | 50 `#FBF3EE`, 100 `#F3DECF`, 400 `#D2A183`, 500 `#C08B6B`, 600 `#A66F51` |
-| `sage` (positive/success — muted sage) | 50 `#F1F5EE`, 100 `#DCE7D3`, 500 `#7FA37A`, 600 `#658362` |
-| `brick` (errors/severity — muted brick, deliberately not alarm-red) | 50 `#FBF0EE`, 100 `#F0D3CC`, 500 `#B65C4B`, 600 `#98483A` |
-
-**Font family**: `sans: ["var(--font-inter)", "system-ui", "sans-serif"]` — references the CSS variable set by `next/font/google` in the root layout, not a bare `"Inter"` string.
-
-**Border-radius scale**: `sm: "4px"` (inputs, badges), `md: "8px"` (buttons), `lg: "14px"` (cards, modals).
-
-**Other theme extensions**: `keyframes` (`in`/`out` — opacity + `translateY(-4px)` fade) and `animation` (`in: "in 220ms ease-out"`, `out: "out 160ms ease-in"`), backing the `animate-in`/`animate-out` utility classes used by `Disclosure` and `Toast` on Radix `data-[state]` attributes. No plugins are registered (`plugins: []`).
-
-### `apps/web/src/components/ui/` — every component, verified by reading
-
-| File | What it does |
-|---|---|
-| `Avatar.tsx` | Circular avatar: renders a `next/image` if `imageUrl` given, otherwise falls back to initials computed from `name`; `sm`/`md`/`lg` sizes map to 28/40/56px |
-| `Badge.tsx` | Small pill label built with `cva`; `tone` variants (`neutral`/`brand`/`success`/`warning`/`danger`) map onto the stone/brand/sage/clay/brick palette; also exports `severityToTone`/`severityToLabel` helpers used for screening severity display |
-| `Button.tsx` | Primary button primitive built with `cva`; `variant` (`primary`/`secondary`/`outline`/`ghost`/`danger`), supports `isLoading`/`disabled` states, uses `forwardRef` |
-| `Card.tsx` | Simple bordered/rounded/shadowed container (`Card`) plus `CardHeader`/`CardTitle`/`CardContent` layout sub-parts |
-| `ConfirmDialog.tsx` | A `Modal` preset for confirm/cancel destructive-or-not actions, with `isConfirming` loading state |
-| `Disclosure.tsx` | Collapsible/accordion built on `@radix-ui/react-collapsible`, chevron icon rotates via `lucide-react`'s `ChevronDown`, uses the `in`/`out` Tailwind animation keyframes |
-| `EmptyState.tsx` | Generic empty/failed-state placeholder — title, optional description, optional icon, optional action button; explicitly reused for both genuinely-empty lists and failed-fetch states |
-| `Input.tsx` | Text `Input`, `Textarea`, and a `FormField` wrapper (label + control + error text), all sharing one base Tailwind class string, built with `forwardRef` |
-| `Modal.tsx` | Dialog built on `@radix-ui/react-dialog`, with an `X` (lucide) close button, title/description slots |
-| `RoleGate.tsx` | `RoleContext`/`RoleProvider`/`useRole` context plus a `RoleGate allow={[...]}` component that renders children only if the current role is in the allow-list (else a `fallback`); its own docblock notes it currently has no real backend to call and is UX-only, not real enforcement |
-| `ScoreRing.tsx` | SVG circular progress ring (0–100 value + label), deliberately brand-teal colored rather than a game-leaderboard palette, reused by both the Profile page and the mini-games module |
-| `Skeleton.tsx` | Base pulsing loading placeholder block (`Skeleton`) plus composed `SkeletonText`/`SkeletonCard` shapes |
-| `Table.tsx` | Table primitives (`Table`, `TableHead`, `TableBody`, `TableRow`, `TableHeaderCell`, `TableCell`) wrapped in a horizontally-scrollable bordered container |
-| `Toast.tsx` | Toast notification system built on `@radix-ui/react-toast`, with a `ToastProvider`/`useToast()` hook and `neutral`/`success`/`error` tones |
-| `index.ts` | Barrel file re-exporting all of the above plus the shared `cn()` class-merge helper from `lib/cn.ts` |
+| `docs/DESIGN.md` | Accurate — matches the shipped theme system exactly, including the `bm-theme` key |
+| `docs/TDD.md` | Not applicable — historical foundational design doc, not a live tracker |
+| `docs/audit-findings.md` | Not applicable — v1 (pre-migration) audit log, correctly historical |
+| `docs/frontend-migration-plan.md` | Partially stale — still useful as a component/data reference, but its auth section never anticipated `SessionProvider`; forward-looking, not descriptive of current code, so not severely stale |
+| `docs/pre-migration-tickets.md` | Not applicable — v1 ticket log, a one-time input artifact |
+| `docs/roadmap.md` | Accurate for its actual scope (the real-backend migration path; Phase 3's real auth is still exactly what `SessionProvider` falls back to) — added a pointer to this file and the prototype docs so it's not mistaken for describing the mock/prototype system |
+| `docs/prototype-roadmap.md` | Was partially stale (PR #53 home page description, admin route URLs, GAD-7-only screening note); corrected in this audit |
+| `docs/role-based-system-plan.md` | Was partially stale (§4 localStorage key names / "extend MockRoleProvider"); flagged, left as the historical plan document rather than rewritten |
+| `docs/project-overview.md` | This file — was severely stale (described deleted `MockRoleProvider`/`FeatureGrid`, a 23-route inventory); replaced in full by this audit |
 
 ---
 
-## 5. Real vs. mocked table
+## 7. Demo-polish pass (2026-09-19) — visual fixes, Playwright, demo-path audit
 
-| Feature area | Status | Notes |
-|---|---|---|
-| Home / About (`/`, `/about`) | Mode-aware | Real content-block fetch with static fallback |
-| Auth — login/signup/psychologist signup | Mode-aware | Real `TokenAuthentication`-backed endpoints exist and are wired; mock mode swaps in a role-picker stand-in |
-| Mood Tracker (`/mood`) | Mode-aware | Real `mood_tracker` API wired |
-| Journal (`/journal`) | Mode-aware | Real `journal` API wired |
-| To-do (`/tools/todo`) | Mode-aware | Real `tasks` API wired |
-| GAD-7 screening (`/screening/gad7`) | Not built (real) / Static prototype | No `screening` API routes wired; scoring is purely client-side and explicitly commented as mocked |
-| Coping library (exercise/yoga/spirituality/aromatherapy) | Not built (real) / Static prototype | No `coping_techniques` API routes wired; timers are genuinely functional client-side, content/persistence is not |
-| Coping mini-games (`/coping/[game]`) | Not built (real) / Static prototype | 1 of 4 games has real gameplay logic; none persist scores server-side |
-| Profile + scores (`/profile`) | Not built (real) / Static-only | No mode-aware branch exists at all yet, unlike the Phase 2 pages |
-| Psychologist directory (`/psychologists`) | Not built (real) / Static-only | Same |
-| Psychologist dashboard (`/dashboard`) | Not built (real) / Static-only, mode-aware gating only | RoleGate is mode-aware; inbox data is not |
-| Admin — patients/analytics/psychologist approval | Not built (real) / Static-only, mode-aware gating only | No admin API endpoints exist; approve/reject is local-state only |
-| Community feed (`/community`) | Not built (real) / Static-only | No `community` API routes wired |
-| Messaging (`/messages/[partnerId]`) | Not built (real) / Static-only | No `chat` API routes wired |
-| Video call (`/call/[sessionId]`) | Not built (real) / Static-only | UI shell only, no Chime/Twilio integration |
-| Hotlines directory (`/resources/hotlines`) | Not built (real) / Static-only | No `hotlines` API routes wired; hardcoded, unverified-by-human data |
-| Mobile app (`apps/mobile`) | Not built | Empty scaffold, no screens |
-| Shared types package (`packages/shared`) | Not built | Empty scaffold, no OpenAPI-generated types yet |
-| Infra (`infra/`) | Not built | Empty scaffold, no Terraform/CDK |
-| Django Channels / websockets | Not built (installed only) | Fully configured in settings, zero consumers/routing — dead dependency in practice |
+Follow-up to the audit above, closing out the three retheme misses from §3/§5 and adding automated coverage so manual QA (role-gating, hover states, screenshot verification) stops being a recurring bottleneck.
 
----
+**Visual fixes**: `Modal`, `Toast`, and `SeverityDistributionChart` are now fully theme-aware — see §3 for the mechanism, and `e2e/theme.spec.ts` for the automated proof (committed screenshot baselines under `e2e/theme.spec.ts-snapshots/`).
 
-## 6. Known gaps and deferred items
+**`/community` gating**: confirmed not a bug, documented as intentional in `access.ts` — see §5, item 1.
 
-Pulled from `docs/roadmap.md` and `docs/prototype-roadmap.md`, then verified against the actual repo.
+**Playwright**: installed in `apps/web` (`@playwright/test`, config at `apps/web/playwright.config.ts`), wired as a new `e2e` job in `.github/workflows/ci.yml` alongside `js`/`python`, running against a production build (`pnpm build && pnpm start`) on a dedicated port (3100) rather than `next dev` on 3000 — dev-mode's on-first-hit route compilation and a habitually-occupied port 3000 in this environment both produced false failures during setup (a redirect that hadn't happened yet looked identical to a broken gate). **Non-blocking for now** (`continue-on-error: true`) — this is the suite's first pass and hasn't proven itself stable in CI yet; promote to blocking once it has been green for a while. HTML report + trace-on-first-retry uploaded as a CI artifact.
 
-### Still open / unchecked, and confirmed still true
+Also added: `pnpm --filter web test` (Vitest) to the existing `js` CI job — it was a literal `TODO` in `ci.yml` ("once apps/web has a test framework configured") that Vitest's own arrival (§1) had already resolved without the CI job catching up.
 
-- **SECURITY.md missing** (`roadmap.md` Phase 1) — confirmed: no `SECURITY.md` exists anywhere in the repo root. Still open, blocked on picking a reporting-contact email.
-- **Django (5.1.6) / DRF (3.15.2) known-CVE upgrade deferred** (`roadmap.md` Phase 1) — confirmed: `requirements/base.txt` still pins exactly these versions; `dependabot-automerge.yml`'s own comment confirms major-version bumps (e.g. a Django bump) are deliberately excluded from auto-merge and left for manual review. Still open.
-- **Phase 4/5 pages need real backend work** (`roadmap.md`) — confirmed still entirely unbuilt for all listed pages: GAD-7 scoring API, coping library auth-gated completion-save endpoints, psychologist directory reject-endpoint, dashboard availability-as-current-state model, profile score-aggregation service, mini-games (Ticket 3 / MindManagement reconciliation), community endpoint-split, messaging (polling vs. websocket decision), video call (Ticket 4 / Chime SDK). None of these have any corresponding Django URL routes, confirmed against `config/urls.py`.
-- **Coping mini-games: only 1 of 4 has real gameplay** (`prototype-roadmap.md`: "static shell + one working game interaction as a proof of concept") — confirmed via `apps/web/src/app/coping/[game]/gameData.ts`: 4 slugs total (`defusion`, `distraction`, `mind-management`, `body-scan`); only `defusion` is implemented in `MiniGameCanvas.tsx`, the other 3 are placeholders.
-- **Hotline numbers unverified** — confirmed still true: `resources/hotlines/page.tsx`'s own on-page copy states "these numbers were sourced from official and independent public listings but have not yet been individually re-verified by a human."
-- **Psychologist approval is mocked-only** — confirmed: `apps/accounts/models.py` has `is_approved` (defaults `False`) but no approve/reject endpoint exists in `apps/api` at all; `admin/psychologists/ApprovalRow.tsx`'s `handleDecide()` only updates local component state.
-- **Mobile app not started** (`roadmap.md` Phase 6) — confirmed: `apps/mobile` is an empty scaffold (Section 2).
-- **Infra not provisioned** (`roadmap.md` Phase 7) — confirmed: `infra/` is an empty scaffold, no Terraform/CDK files exist; no RDS/Postgres instance exists anywhere in this repo.
-- **CRUD on the 4 real pages still hits the live API even in mock mode** (`prototype-roadmap.md`'s explicit caveat: "adding a task, saving a journal entry, logging a mood entry, deleting a task or entry still call the real API even under mock mode — only the initial/populated view and To-do's toggle interaction were retrofitted") — this is a design decision documented as intentionally incomplete, not verified further here since it concerns runtime behavior rather than static code presence, but the described `isMockMode()` branch points (initial fetch only, not mutations) match what Section 3 found.
+Suite scope, and one deliberate scope cut:
+- **Sign-in/sign-out** (`e2e/auth.spec.ts`): role-card sign-in persists across reload, nav swaps to `PATIENT_NAV`; `AvatarMenu` sign-out clears the session and returns to the guest header.
+- **Role-gating matrix** (`e2e/role-gating.spec.ts`): guest redirect-with-`next`, the `/coping`+`/community` guest trial, patient/psychologist cross-forbidding, legacy URL redirects, signed-in landing-page redirect — mirrors `access.test.ts`'s own cases end-to-end through real navigation.
+- **Theme screenshots** (`e2e/theme.spec.ts`): light/dark, scoped to exactly the three fixed surfaces plus the home page as a general baseline — not a full-app snapshot matrix.
+- **Video call** (`e2e/call.spec.ts`) — **scoped down from a two-context Jitsi handshake test.** `CallRoom.tsx` embeds a **real** `meet.jit.si` iframe (a public third-party service), not a mock room — confirmed by reading the code before writing the test. A deterministic CI assertion that two browser contexts actually connect to each other would depend on that free public service's live availability and its "first participant must sign in" quirk (documented in `CallRoom.tsx`'s own comment), which isn't something a smoke suite should be flaky against. Flagging this rather than building brittle CI around it: the test instead covers the page's own shell (loads, mounts the iframe container, shows a connecting status, controls render) with fake-media-stream flags so Chromium doesn't hang on a real camera/mic prompt.
 
-### Flagged as already done, contrary to what a stale reading might suggest
-
-- `docs/roadmap.md` Phase 4 is explicitly marked in the doc itself as "Superseded as of the prototype pivot" and left unedited as a future reference — this is correctly self-aware, not stale. No contradiction found.
-- The "Open decision — existing real pages" section in `prototype-roadmap.md` is marked "Decided: (b) — now fully implemented," and this is verified true: `/`, `/about`, `/mood`, `/journal`, and `/tools/todo` all genuinely have working `isMockMode()` branches (Section 3).
-
-### Real gaps found that are NOT mentioned in either roadmap doc
-
-- **Django Channels is installed, fully configured (`ASGI_APPLICATION`, `CHANNEL_LAYERS`, `channels`/`channels-redis` in requirements) but has zero consumers or routing anywhere in the codebase.** This is a dead dependency in practice today, and it's the same pattern the v1 audit (`docs/audit-findings.md`) flagged as a problem in the old codebase — worth noting since neither roadmap doc calls this out for v2 specifically.
-- **6 of the 12 local Django apps have no URL routing at all**: `screening`, `coping_techniques`, `chat`, `community`, `hotlines`, `feedback` exist as Django apps (with migrations) but are entirely absent from `config/urls.py`. Neither roadmap doc states this as explicitly as the routing file itself shows it — it's implied by "no endpoint exists" language scattered across Phase 4/5 items, but the full scope (6 whole apps with zero routes) is not spelled out in one place in either doc.
-- **`docs/CODEMAPS/` is an empty directory** (only `.gitkeep`) — not mentioned in either roadmap doc; likely intended for `doc-updater`/codemap tooling that hasn't been run yet.
-
----
-
-*This document supersedes any prior overview/summary doc for currency purposes but does not replace `docs/roadmap.md`, `docs/prototype-roadmap.md`, `docs/frontend-migration-plan.md`, `docs/audit-findings.md`, `docs/TDD.md`, or `docs/pre-migration-tickets.md`, which remain the authoritative planning/history record. This file is a point-in-time factual snapshot, verified by direct file inspection on 2026-09-13 — re-verify before relying on it after further changes land.*
+**Demo-path audit** (home → mock sign-in → a few gated pages → sign-out, screenshotted at desktop, mobile, and both themes): clean. No console/network errors, no broken links, no unstyled fallback states found along the actual walkthrough path. One thing found again but intentionally left out of this pass's bounded scope: the `ScreeningSection.tsx` `ToolRow` column-width wrap on "DASS-21" (§5, item 5) — real, but off the literal demo path (home's screening list isn't part of the signed-in walkthrough; `/home`'s own screening card doesn't have the same fixed-width column).
