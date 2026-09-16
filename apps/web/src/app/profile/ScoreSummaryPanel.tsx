@@ -44,37 +44,45 @@ function listLabels(keys: ModuleKey[]): string {
   return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
 }
 
-function headline(groups: Record<Trend, ModuleKey[]>): string {
+// Copy addresses the patient ("you") on their own profile and names them in
+// the third person on the psychologist's patient detail page.
+function headline(groups: Record<Trend, ModuleKey[]>, subject: string | null): string {
+  const who = subject ?? "You";
   if (groups.strong.length > 0) {
-    return `You've been most consistent with ${listLabels(groups.strong)}.`;
+    return `${who} ${subject ? "has" : "have"} been most consistent with ${listLabels(groups.strong)}.`;
   }
   if (groups.building.length > 0) {
-    return `You're building momentum across ${listLabels(groups.building)}.`;
+    return `${who} ${subject ? "is" : "are"} building momentum across ${listLabels(groups.building)}.`;
   }
   return "Every module is a fresh start right now, and that's a fine place to begin.";
 }
 
-function nextStep(groups: Record<Trend, ModuleKey[]>): string | null {
+function nextStep(groups: Record<Trend, ModuleKey[]>, subject: string | null): string | null {
   if (groups.starting.length === 0) return null;
-  return `${listLabels(groups.starting)} ${groups.starting.length === 1 ? "is" : "are"} a gentle place to explore next.`;
+  const verb = groups.starting.length === 1 ? "is" : "are";
+  const tail = subject ? `a gentle place for ${subject} to explore next.` : "a gentle place to explore next.";
+  return `${listLabels(groups.starting)} ${verb} ${tail}`;
 }
 
 interface ScoreSummaryPanelProps {
   scores: ModuleScores;
+  /** First name of the person the scores belong to, when the reader is not that person. */
+  subjectName?: string;
 }
 
 // Server component (module 2, REDESIGN): one ScoreRing per module in muted
 // brand teal instead of a flat "Total Score: N", and trend language instead
 // of raw point totals. The raw total is deliberately not shown.
-export function ScoreSummaryPanel({ scores }: ScoreSummaryPanelProps) {
+export function ScoreSummaryPanel({ scores, subjectName }: ScoreSummaryPanelProps) {
   const groups = groupByTrend(scores);
-  const next = nextStep(groups);
+  const subject = subjectName ?? null;
+  const next = nextStep(groups, subject);
 
   return (
     <Card>
       <CardHeader className="flex-col items-start gap-1">
-        <CardTitle>How you&apos;re doing</CardTitle>
-        <p className="text-sm text-stone-600">{headline(groups)}</p>
+        <CardTitle>{subject ? `How ${subject} is doing` : "How you're doing"}</CardTitle>
+        <p className="text-sm text-stone-600">{headline(groups, subject)}</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <ul className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-7" aria-label="Progress by module">

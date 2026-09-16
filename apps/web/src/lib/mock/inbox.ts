@@ -9,18 +9,22 @@ export type InboxStatus = "pending" | "read" | "accepted" | "rejected";
 
 export interface InboxRow {
   messageId: number;
+  /** Patient id (lib/mock/patients.ts) — the /messages/[partnerId] target. */
+  partnerId: number;
   senderName: string;
+  preview: string;
+  waitingLabel: string;
   severity: Severity | "unknown";
   status: InboxStatus;
 }
 
 const MOCK_INBOX: readonly InboxRow[] = [
-  { messageId: 101, senderName: "Bea Castillo", severity: "moderate", status: "pending" },
-  { messageId: 102, senderName: "Carlo Navarro", severity: "severe", status: "pending" },
-  { messageId: 103, senderName: "Dana Lim", severity: "mild", status: "read" },
-  { messageId: 104, senderName: "Eli Fernandez", severity: "minimal", status: "accepted" },
-  { messageId: 105, senderName: "Faye Ocampo", severity: "unknown", status: "read" },
-  { messageId: 106, senderName: "Gio Ramos", severity: "moderate", status: "rejected" },
+  { messageId: 101, partnerId: 202, senderName: "Carlo Navarro", preview: "Could we move Thursday earlier?", waitingLabel: "6 h", severity: "severe", status: "pending" },
+  { messageId: 102, partnerId: 203, senderName: "Dana Lim", preview: "The breathing exercise helped a lot this week.", waitingLabel: "3 h", severity: "mild", status: "pending" },
+  { messageId: 103, partnerId: 201, senderName: "Bea Castillo", preview: "Sending my journal note before our call.", waitingLabel: "1 h", severity: "mild", status: "pending" },
+  { messageId: 104, partnerId: 204, senderName: "Eli Fernandez", preview: "Thanks for the welcome message.", waitingLabel: "Yesterday", severity: "minimal", status: "accepted" },
+  { messageId: 105, partnerId: 205, senderName: "Faye Ocampo", preview: "I might skip this week, feeling okay.", waitingLabel: "2 days", severity: "unknown", status: "read" },
+  { messageId: 106, partnerId: 206, senderName: "Gio Ramos", preview: "Is the yoga routine okay with a sore back?", waitingLabel: "3 days", severity: "moderate", status: "rejected" },
 ];
 
 /**
