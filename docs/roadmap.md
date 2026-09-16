@@ -4,6 +4,15 @@ Last updated: 2026-09-09. Check items off as they land; this is a living
 document, not a fixed spec — update it as decisions get made (see TDD §9 open
 questions, which several phases below depend on).
 
+**This doc tracks the real-backend migration path only** (Phase 3's real
+`TokenAuthentication` + `/auth/me/` below is still accurate and is exactly
+what the prototype's `SessionProvider` falls back to outside mock mode). It
+does not describe the static-prototype pivot's own auth/role system
+(role-cards login, `SessionProvider`, `/psych/*` workspace) or the 2026-09
+home page/theme redesign — see `docs/prototype-roadmap.md` and
+`docs/role-based-system-plan.md` for those, and `docs/project-overview.md`
+for a from-scratch snapshot of what's actually in the repo right now.
+
 ---
 
 ## Phase 0 — Foundation (DONE)

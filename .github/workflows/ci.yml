@@ -30,8 +30,9 @@ jobs:
       - run: pnpm --filter web lint
       - run: pnpm --filter web typecheck
       - run: pnpm --filter web build
-      # TODO: add a `test` step once apps/web has a test framework configured
-      # (no jest/vitest setup exists yet).
+      # Vitest landed with the role-based session system (PR #85) — this was
+      # a genuine TODO above, not a placeholder; the framework now exists.
+      - run: pnpm --filter web test
 
       # Advisory only — reports known-vulnerable prod dependencies without
       # blocking the merge.
