@@ -9,16 +9,16 @@ export function CrisisBanner() {
   return (
     <aside
       aria-label="Crisis support"
-      className="border-b border-clay-100 bg-clay-50 text-sm text-stone-700"
+      className="border-b border-brand-100 bg-brand-50 text-sm text-stone-700"
     >
-      <div className={`${CONTAINER_CLASS} flex flex-wrap items-center justify-between gap-x-5 gap-y-1.5 py-2.5`}>
-        <p className="flex items-center gap-2">
-          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-clay-500" />
+      <div className={`${CONTAINER_CLASS} flex flex-wrap items-center justify-between gap-x-5 gap-y-1.5 py-2.5 lg:flex-nowrap`}>
+        <p className="flex items-center gap-2 lg:whitespace-nowrap">
+          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-brand-400" />
           <span>
-            If you are in crisis right now, call the{" "}
+            Need immediate support? Free, confidential help is available from the{" "}
             <a
               href={CRISIS_HOTLINE.telHref}
-              className="font-semibold text-clay-600 underline underline-offset-4"
+              className="font-semibold text-brand-700 underline underline-offset-4"
             >
               {CRISIS_HOTLINE.name} · {CRISIS_HOTLINE.number}
             </a>{" "}
@@ -27,7 +27,7 @@ export function CrisisBanner() {
         </p>
         <Link
           href={HOTLINES_LINK.href}
-          className="font-semibold text-clay-600 underline-offset-4 hover:underline"
+          className="shrink-0 font-semibold text-brand-700 underline-offset-4 hover:underline"
         >
           All {HOTLINES_LINK.label.toLowerCase()} &rarr;
         </Link>

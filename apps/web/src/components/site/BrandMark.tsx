@@ -1,12 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Brain } from "lucide-react";
 import { cn } from "@/components/ui";
-import logo from "@/app/icon.png";
 
-// The one brand mark for the site header, the auth-flow header and the
-// footer, so it never drifts between them. Uses the actual BrighterMind logo
-// (the same file behind the browser-tab favicon) plus the name spelled out —
-// the logo's own curved "BRIGHTER MIND" text is illegible at navbar height.
+// The one brand mark for the site header, auth-flow header and footer, so it
+// stays recognizable at both navbar and compact footer sizes.
 export function BrandMark({ className, size = 30 }: { className?: string; size?: number }) {
   return (
     <Link
@@ -17,13 +14,13 @@ export function BrandMark({ className, size = 30 }: { className?: string; size?:
         className
       )}
     >
-      <Image
-        src={logo}
-        alt=""
-        priority
-        className="shrink-0"
-        style={{ height: size, width: "auto" }}
-      />
+      <span
+        aria-hidden="true"
+        className="grid shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700"
+        style={{ height: size, width: size }}
+      >
+        <Brain className="h-[62%] w-[62%]" strokeWidth={1.8} />
+      </span>
       BrighterMind
     </Link>
   );

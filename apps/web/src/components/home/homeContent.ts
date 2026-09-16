@@ -60,8 +60,7 @@ export interface ScreeningTool {
   readonly href: string;
 }
 
-// Instrument set from the 2.0 proposal (c:\mental\proposal). Only GAD-7 has a
-// route today; the others link to the screening hub until they are built.
+// Instrument set from the 2.0 proposal (c:\mental\proposal).
 export const SCREENING_TOOLS: readonly ScreeningTool[] = [
   {
     code: "GAD-7",
@@ -76,24 +75,24 @@ export const SCREENING_TOOLS: readonly ScreeningTool[] = [
     name: "Low mood",
     meta: "9 questions about interest, energy, sleep, and self-worth",
     minutes: 3,
-    status: "planned",
-    href: "/screening/gad7",
+    status: "available",
+    href: "/screening/phq9",
   },
   {
     code: "DASS-21",
     name: "Stress, anxiety, low mood",
     meta: "21 questions, three scores, one picture of the past week",
     minutes: 5,
-    status: "planned",
-    href: "/screening/gad7",
+    status: "available",
+    href: "/screening/dass21",
   },
   {
     code: "WHO-5",
     name: "Well-being",
     meta: "5 questions about what has gone well, for tracking over time",
     minutes: 1,
-    status: "planned",
-    href: "/screening/gad7",
+    status: "available",
+    href: "/screening/who5",
   },
 ];
 
