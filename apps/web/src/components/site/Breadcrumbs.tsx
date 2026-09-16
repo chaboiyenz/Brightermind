@@ -30,7 +30,7 @@ const STATIC_ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/coping/yoga": [HOME, COPING, { label: "Yoga" }],
   "/coping/spirituality": [HOME, COPING, { label: "Spirituality" }],
   "/coping/aromatherapy": [HOME, COPING, { label: "Aromatherapy" }],
-  "/dashboard": [HOME, { label: "Dashboard" }],
+  "/care": [HOME, { label: "My care" }],
   "/journal": [HOME, { label: "Journal" }],
   "/login": [HOME, { label: "Log in" }],
   "/mood": [HOME, { label: "Mood tracker" }],
@@ -44,9 +44,6 @@ const STATIC_ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/signup": [HOME, { label: "Sign up" }],
   "/signup/psychologist": [HOME, { label: "Sign up", href: "/signup" }, { label: "Psychologist" }],
   "/tools/todo": [HOME, { label: "To-do" }],
-  "/admin/analytics": [HOME, { label: "Analytics" }],
-  "/admin/patients": [HOME, { label: "Patients" }],
-  "/admin/psychologists": [HOME, { label: "Psychologist approvals" }],
 };
 
 // Routes with a dynamic final segment — built from the pathname rather than
@@ -64,8 +61,14 @@ function dynamicRouteCrumbs(pathname: string): Crumb[] | null {
   return null;
 }
 
+// The psychologist workspace (/psych/*) carries its own top bar with the
+// page title, so breadcrumbs would duplicate it. Psychologists on shared
+// routes (/messages, /call, /community) also get no trail, since PsychShell
+// renders instead of the website chrome (SiteChrome decides that).
 function getCrumbs(pathname: string): Crumb[] | null {
-  if (pathname === "/" || pathname.startsWith("/call/")) return null;
+  if (pathname === "/" || pathname === "/home" || pathname.startsWith("/call/") || pathname.startsWith("/psych")) {
+    return null;
+  }
   return STATIC_ROUTE_CRUMBS[pathname] ?? dynamicRouteCrumbs(pathname);
 }
 
