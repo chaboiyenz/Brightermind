@@ -347,11 +347,8 @@ export const LEARN_TOPICS: readonly LearnTopic[] = [
   { title: "Stress", description: "Pressure that is useful in small doses and harmful in long ones" },
   { title: "Low mood", description: "When nothing feels worth it, and how to tell a slump from something more" },
   { title: "Sleep", description: "Why racing thoughts arrive at night, and small changes that help" },
-  {
-    title: "Burnout",
-    description: "Exhaustion, cynicism and a drop in performance. Common among students, and recoverable.",
-    wide: true,
-  },
+  { title: "Burnout", description: "Exhaustion, cynicism and a drop in performance. Common among students, and recoverable." },
+  { title: "Grounding", description: "Small ways to return attention to the present when thoughts or feelings feel too loud" },
 ];
 
 // ---- Trust -----------------------------------------------------------------
