@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Cloud, Leaf, Moon, Sun, Waves } from "lucide-react";
 import { cn } from "@/components/ui";
 import { BreathingPacer } from "./BreathingPacer";
 import { MOOD_LEVELS, type MoodLevel } from "./homeContent";
 import { DEFAULT_MOOD, replyForMood } from "./moodReplies";
+
+const MOOD_ICONS = [Waves, Cloud, Moon, Leaf, Sun] as const;
+const MOOD_ICON_COLORS = ["text-clay-500", "text-brand-600", "text-brand-700", "text-sage-600", "text-clay-500"] as const;
 
 // The hero's interactive moment: breathe, then say how today is. The reply
 // routes into the coping library so the first click already teaches what the
@@ -35,6 +39,7 @@ export function CheckInCard() {
         <div role="group" aria-labelledby="mood-question" className="grid grid-cols-5 gap-2">
           {MOOD_LEVELS.map((level) => {
             const selected = level.value === mood;
+            const Icon = MOOD_ICONS[level.value - 1];
             return (
               <button
                 key={level.value}
@@ -48,11 +53,7 @@ export function CheckInCard() {
                     : "border-stone-200 bg-stone-50 text-stone-700 hover:border-brand-300"
                 )}
               >
-                <span
-                  aria-hidden="true"
-                  className="h-[22px] w-[22px] rounded-full shadow-[inset_0_-3px_0_rgba(0,0,0,0.08)]"
-                  style={{ backgroundColor: level.color }}
-                />
+                <Icon className={cn("h-[22px] w-[22px]", MOOD_ICON_COLORS[level.value - 1])} strokeWidth={1.8} aria-hidden="true" />
                 {level.label}
               </button>
             );
@@ -78,6 +79,7 @@ export function CheckInCard() {
           </ul>
         </div>
       </div>
+
     </section>
   );
 }
