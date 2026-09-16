@@ -16,9 +16,14 @@ const NAV_LINK_CLASS =
 
 const ACTIVE_LINK_CLASS = "bg-brand-50 text-brand-700";
 
+// A link with a #fragment targets a *section* of a page, not the page — so it
+// never claims the active state; the un-hashed link for that path owns it.
+// Without this, "/home" and "/home#screening" (and "/coping" vs
+// "/coping#games") both matched the same pathname and both lit up at once.
 function isActive(link: SiteLink, pathname: string): boolean {
-  const [path] = link.href.split("#");
-  if (!path || path === "/") return pathname === "/";
+  if (link.href.includes("#")) return false;
+  const path = link.href;
+  if (path === "/") return pathname === "/";
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
@@ -118,7 +123,12 @@ export function SiteHeader() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className={cn(NAV_LINK_CLASS, "block rounded-lg")}
+                className={cn(
+                  NAV_LINK_CLASS,
+                  "block rounded-lg",
+                  isPatient && isActive(link, pathname) && ACTIVE_LINK_CLASS
+                )}
+                aria-current={isPatient && isActive(link, pathname) ? "page" : undefined}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}

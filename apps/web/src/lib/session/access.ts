@@ -23,7 +23,15 @@ const AUTH_PREFIXES = ["/login", "/signup"] as const;
 
 // Everything a guest is sent to sign in for. Coping techniques and games are
 // deliberately absent: they are the guest "trial", gated at the save moment
-// instead (see KeepProgressSheet).
+// instead (see KeepProgressSheet). "/community" is deliberately absent too,
+// for a related but different reason — flagged in an earlier audit as a
+// possible gating oversight (nav treats it like a members feature) until
+// checked against the actual page: guests get a real read-only view there
+// per the access matrix (docs/role-based-system-plan.md §2 "Community: read
+// only"), enforced per-action inside the page rather than at the route gate
+// — see PostList.tsx/VoteButton.tsx/CommentThread.tsx's `useSession()`
+// checks and `SignInPrompt`. Adding "/community" here would turn that
+// working guest trial into a hard sign-in wall — don't.
 const SIGNED_IN_PREFIXES = [
   "/screening",
   "/mood",

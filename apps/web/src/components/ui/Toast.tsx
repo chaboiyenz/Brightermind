@@ -47,7 +47,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <ToastPrimitive.Root
             key={toast.id}
             className={cn(
-              "rounded-md border p-4 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out",
+              "rounded-md border p-4 shadow-float data-[state=open]:animate-in data-[state=closed]:animate-out",
               toneStyles[toast.tone]
             )}
             duration={5000}

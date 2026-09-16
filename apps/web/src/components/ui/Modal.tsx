@@ -24,7 +24,7 @@ export function Modal({ open, onOpenChange, title, description, children, classN
         <Dialog.Overlay className="fixed inset-0 bg-stone-900/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
         <Dialog.Content
           className={cn(
-            "fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-stone-25 p-6 shadow-lg focus:outline-none",
+            "fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-stone-25 p-6 shadow-float focus:outline-none",
             className
           )}
         >
