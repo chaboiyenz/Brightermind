@@ -6,7 +6,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Button, FormField, Input } from "@/components/ui";
 import { registerStudent, type RegisterStudentInput } from "@/lib/api";
 import { isMockMode } from "@/lib/mock/mockMode";
-import { useMockRole } from "@/components/MockRoleProvider";
+import { useSession } from "@/components/SessionProvider";
 
 // Mock-mode retrofit (decision (b), docs/prototype-roadmap.md) — this route
 // is specifically the *student* signup, so there's no role to choose (unlike
@@ -19,17 +19,17 @@ export function SignupForm() {
 }
 
 // No form fields, no real account — purely a role-selection stand-in for
-// "being signed up", reusing MockRoleProvider's role state (useMockRole)
-// rather than a second mock-auth mechanism. Redirects to /mood, matching
+// "being signed up", reusing the app session (useSession)
+// rather than a second mock-auth mechanism. Redirects to the landing page, matching
 // exactly where a real successful student signup sends the user (see
 // RealSignupForm below).
 function MockSignupForm() {
   const router = useRouter();
-  const { setRole } = useMockRole();
+  const { signIn } = useSession();
 
   function handleContinue() {
-    setRole("student");
-    router.push("/mood");
+    signIn("student");
+    router.push("/");
   }
 
   return (
@@ -72,7 +72,7 @@ function RealSignupForm() {
     try {
       await registerStudent(values);
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
-      router.push("/mood");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
     } finally {
