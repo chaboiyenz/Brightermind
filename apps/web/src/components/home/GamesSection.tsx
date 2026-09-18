@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { GAME_SLUGS, GAME_TITLES, type GameSlug } from "@/app/coping/[game]/gameData";
+import { useSession } from "@/components/SessionProvider";
 import { cn } from "@/components/ui";
+import { loginHref } from "@/lib/session/access";
 import { GameArt } from "./GameArt";
 import { GAME_HIGHLIGHTS } from "./homeContent";
 import { CONTAINER_CLASS, SECTION_CLASS, SectionHeading } from "./SectionHeading";
@@ -27,12 +31,19 @@ export function GamesSection() {
   );
 }
 
+// A guest tapping a mini-game is sent through the prototype sign-in first and
+// lands on the game they picked (`next`). /coping stays open as the guest
+// trial for anyone arriving by another route — lib/session/access.ts keeps it
+// out of SIGNED_IN_PREFIXES on purpose — this is a decision about the landing
+// page's tiles only, not a route gate.
 function GameCard({ slug }: { slug: GameSlug }) {
+  const { isSignedIn } = useSession();
   const game = GAME_HIGHLIGHTS[slug];
   const available = game.status === "available";
+  const gameHref = `/coping/${slug}`;
   return (
     <Link
-      href={`/coping/${slug}`}
+      href={isSignedIn ? gameHref : loginHref(gameHref)}
       className="grid h-full grid-rows-[150px_auto] overflow-hidden rounded-2xl border border-stone-200 bg-stone-25 transition-[border-color,box-shadow,transform] duration-200 ease-gentle hover:border-brand-300 hover:shadow-soft motion-safe:hover:-translate-y-0.5"
     >
       <div aria-hidden="true" className="grid place-items-center border-b border-stone-200 bg-stone-100">
