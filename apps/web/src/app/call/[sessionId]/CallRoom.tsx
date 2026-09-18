@@ -1,9 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react";
-import { Button } from "@/components/ui";
+import { useSession } from "@/components/SessionProvider";
+import { Button, buttonVariants } from "@/components/ui";
+import { isPsychRole } from "@/lib/session/access";
 import {
+  CALL_CLOSE_LABEL,
   CALL_ENDED_MESSAGE,
   CALL_ERROR_MESSAGE,
   CALL_LOAD_FAILED_MESSAGE,
@@ -87,6 +91,7 @@ interface CallRoomProps {
 // API key or app signup, but not fully frictionless for whoever opens the
 // room first. See videoRoom.ts for the room-name guessability caveat.
 export function CallRoom({ sessionId, partnerName }: CallRoomProps) {
+  const { role } = useSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<JitsiMeetExternalAPI | null>(null);
 
@@ -169,12 +174,20 @@ export function CallRoom({ sessionId, partnerName }: CallRoomProps) {
   }
 
   if (hasEnded) {
+    // Where Close goes: the list the call was started from — patients join
+    // from /care, psychologists run their day from /psych/sessions. Leaving
+    // the dark call shell is the point, so this is a real navigation rather
+    // than router.back(), which could bounce a directly-opened room off-site.
+    const closeHref = isPsychRole(role) ? "/psych/sessions" : "/care";
     return (
       <div
         data-call-state="ended"
-        className="flex flex-1 flex-col items-center justify-center gap-2 text-center"
+        className="flex flex-1 flex-col items-center justify-center gap-5 text-center"
       >
         <p className="text-lg font-medium text-stone-900">{CALL_ENDED_MESSAGE}</p>
+        <Link href={closeHref} className={buttonVariants({ variant: "outline", size: "sm" })}>
+          {CALL_CLOSE_LABEL}
+        </Link>
       </div>
     );
   }

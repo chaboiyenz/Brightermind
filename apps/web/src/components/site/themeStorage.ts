@@ -1,10 +1,17 @@
 // Theme persistence shared by the root layout (pre-paint script) and the
-// header toggle. Resolution order is documented in globals.css: no attribute
-// = follow the OS, data-theme="light" / "dark" = explicit choice.
+// header toggle. Resolution order is documented in globals.css: light is the
+// default for everyone, and data-theme="dark" is the only way to get dark.
 
 export type ThemeChoice = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "bm-theme";
+
+/**
+ * What a visitor gets before they touch the toggle. Light by decision, not by
+ * OS preference: the product's resting state is the light sanctuary palette,
+ * and a dark-mode OS should not silently override it.
+ */
+export const DEFAULT_THEME: ThemeChoice = "light";
 
 export function isThemeChoice(value: unknown): value is ThemeChoice {
   return value === "light" || value === "dark";
@@ -17,10 +24,6 @@ export function readStoredTheme(): ThemeChoice | null {
   } catch {
     return null;
   }
-}
-
-export function systemTheme(): ThemeChoice {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function applyTheme(choice: ThemeChoice): void {
