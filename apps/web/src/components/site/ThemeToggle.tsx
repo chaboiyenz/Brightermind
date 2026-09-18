@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/components/ui";
-import { applyTheme, readStoredTheme, systemTheme, type ThemeChoice } from "./themeStorage";
-
-const DARK_QUERY = "(prefers-color-scheme: dark)";
+import { DEFAULT_THEME, applyTheme, readStoredTheme, type ThemeChoice } from "./themeStorage";
 
 // Light = docs/DESIGN.md "Serene Restorative Sanctuary"; dark = "Evening
 // Pine". Until mounted we render a neutral button so server and client markup
-// match; the real theme is read from storage / the OS in the effect. While no
-// explicit choice is stored, the icon follows live OS theme changes too.
+// match; the stored choice is read in the effect. With nothing stored the
+// theme is DEFAULT_THEME (light) regardless of the OS preference — see
+// globals.css for why the OS is not followed.
 export function ThemeToggle({ className }: { className?: string }) {
   const [theme, setTheme] = useState<ThemeChoice | null>(null);
 
@@ -37,14 +36,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   }
 
   useEffect(() => {
-    setTheme(readStoredTheme() ?? systemTheme());
-
-    const media = window.matchMedia(DARK_QUERY);
-    const followSystem = () => {
-      if (readStoredTheme() === null) setTheme(media.matches ? "dark" : "light");
-    };
-    media.addEventListener("change", followSystem);
-    return () => media.removeEventListener("change", followSystem);
+    setTheme(readStoredTheme() ?? DEFAULT_THEME);
   }, []);
 
   const next: ThemeChoice = theme === "dark" ? "light" : "dark";

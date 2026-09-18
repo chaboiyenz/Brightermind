@@ -15,8 +15,10 @@
   Dark   = "Evening Pine" (deep pine ground, warm stone ink, soft pine accent,
            desaturated clay action).
 
-  Resolution order: bare :root is light; the OS dark preference applies dark
-  unless <html data-theme="light">; <html data-theme="dark"> forces dark.
+  Resolution order: light is the default for everyone — the OS
+  `prefers-color-scheme: dark` preference is deliberately NOT followed, so a
+  first visit always lands on the light "Serene Restorative Sanctuary" set.
+  Dark is opt-in only: <html data-theme="dark">, written by the header toggle.
   `.theme-dark` on any element applies the dark set to that subtree only.
 */
 :root {
@@ -72,56 +74,6 @@
   --shadow-float: 0 16px 40px -8px rgb(44 62 53 / 0.08), 0 24px 64px -12px rgb(44 62 53 / 0.05);
   --shadow-coral: 0 4px 12px rgb(224 122 95 / 0.25);
   --frost: 255 255 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-
-    --brand-50: 26 43 39;
-    --brand-100: 34 57 47;
-    --brand-200: 47 82 71;
-    --brand-300: 58 122 107;
-    --brand-400: 84 147 132;
-    --brand-500: 124 174 159;
-    --brand-600: 124 174 159;
-    --brand-700: 168 201 192;
-    --brand-800: 211 228 223;
-    --brand-900: 238 244 242;
-    --on-brand: 15 26 23;
-
-    --stone-25: 23 34 32;
-    --stone-50: 18 26 24;
-    --stone-100: 24 36 33;
-    --stone-200: 34 49 45;
-    --stone-300: 47 66 61;
-    --stone-600: 163 158 144;
-    --stone-700: 215 211 201;
-    --stone-800: 228 225 217;
-    --stone-900: 242 240 235;
-
-    --clay-50: 42 33 28;
-    --clay-100: 58 44 36;
-    --clay-400: 210 161 131;
-    --clay-500: 192 139 107;
-    --clay-600: 224 179 150;
-    --on-clay: 31 23 18;
-
-    --sage-50: 28 37 26;
-    --sage-100: 38 51 31;
-    --sage-500: 127 163 122;
-    --sage-600: 169 197 164;
-
-    --brick-50: 46 28 25;
-    --brick-100: 58 38 34;
-    --brick-500: 201 122 106;
-    --brick-600: 224 160 144;
-
-    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
-    --shadow-float: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.7);
-    --shadow-coral: 0 4px 12px rgb(192 139 107 / 0.25);
-    --frost: 23 34 32;
-  }
 }
 
 /* `.theme-dark` scopes the dark set to a subtree in either theme — used for
