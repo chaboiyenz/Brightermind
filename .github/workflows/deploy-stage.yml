@@ -1,5 +1,9 @@
 name: Deploy — stage
 
+# Deploys the API (apps/api) only, and is dormant until AWS infra exists (see
+# the job condition below). The web app deploys to Vercel instead —
+# docs/ci-cd/vercel-setup.md.
+
 on:
   push:
     branches: [stage]

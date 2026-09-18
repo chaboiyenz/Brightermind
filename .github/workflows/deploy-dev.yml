@@ -1,5 +1,11 @@
 name: Deploy — dev
 
+# This workflow deploys the API (apps/api) only, and is dormant — see the job
+# condition below. It does NOT deploy the web app: apps/web goes to Vercel via
+# Vercel's own Git integration, which needs no workflow file. If you are here
+# because a push to dev did not deploy the site, docs/ci-cd/vercel-setup.md is
+# the file you want.
+
 on:
   push:
     branches: [dev]
