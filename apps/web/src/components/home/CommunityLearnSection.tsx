@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { BatteryMedium, Brain, HeartPulse, MessageCircle, Moon, MoonStar, ShieldCheck, Sparkles, Users, Gauge } from "lucide-react";
 import { cn } from "@/components/ui";
-import { COMMUNITY_ROOMS, LEARN_TOPICS } from "./homeContent";
+import { COMMUNITY_ROOMS, LEARN_HREF, LEARN_TOPICS } from "./homeContent";
 import { CONTAINER_CLASS, Eyebrow, SECTION_CLASS } from "./SectionHeading";
 
 const H2_CLASS =
@@ -16,32 +16,6 @@ const ROOM_COLORS = ["text-brand-700", "text-brand-500", "text-clay-500"] as con
 const TOPIC_ICONS = [Brain, Gauge, HeartPulse, Moon, BatteryMedium, ShieldCheck] as const;
 const TOPIC_COLORS = ["text-brand-700", "text-clay-500", "text-sage-600", "text-brand-500", "text-clay-600", "text-sage-600"] as const;
 const TOPIC_ICON_BACKGROUNDS = ["bg-brand-100", "bg-clay-50", "bg-sage-100", "bg-brand-50", "bg-clay-50", "bg-sage-100"] as const;
-const TOPIC_DETAILS: Record<string, { detail: string; next: string }> = {
-  Anxiety: {
-    detail: "Anxiety can make ordinary uncertainty feel urgent. Notice the body signal first, then try one slower exhale before deciding what needs your attention.",
-    next: "Try a two-minute body scan",
-  },
-  Stress: {
-    detail: "Stress is your system preparing to meet demand. It can help in short bursts, but recovery matters when the pressure becomes constant.",
-    next: "Find a small thing you can change",
-  },
-  "Low mood": {
-    detail: "Low mood can make effort feel pointless and shrink your sense of possibility. Small routines and gentle contact count, even when motivation is missing.",
-    next: "Choose one kind action for today",
-  },
-  Sleep: {
-    detail: "Racing thoughts at night are common when the day finally goes quiet. A predictable wind-down gives your body a clearer signal that it is safe to rest.",
-    next: "Build a softer bedtime routine",
-  },
-  Burnout: {
-    detail: "Burnout is more than being tired. Rest, reduced demands, and support help restore capacity; pushing harder usually deepens the drop.",
-    next: "Talk to someone before the tank is empty",
-  },
-  Grounding: {
-    detail: "Grounding uses your senses and surroundings to create a little distance from an intense moment. It is a pause, not a way to dismiss what you feel.",
-    next: "Try naming five things you can see",
-  },
-};
 
 const STARTER_POSTS = [
   { author: "Anonymous Member", age: "12m ago", text: '"I closed Slack at 5:30 PM without apologizing. For the first time in months, my evenings belong to quiet tea and painting."', likes: 48 },
@@ -51,7 +25,6 @@ const STARTER_POSTS = [
 export function CommunityLearnSection() {
   const [posts, setPosts] = useState(STARTER_POSTS);
   const [draft, setDraft] = useState("");
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
 
   function sharePost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -148,32 +121,19 @@ export function CommunityLearnSection() {
           <ul className="mt-7 grid gap-3 sm:grid-cols-2">
             {LEARN_TOPICS.map((topic, topicIndex) => (
               <li key={topic.title} className={topic.wide ? "sm:col-span-2" : undefined}>
-                <button
-                  type="button"
-                  aria-pressed={selectedTopic === topic.title}
-                  onClick={() => setSelectedTopic((current) => current === topic.title ? null : topic.title)}
-                  className={cn(
-                    "grid w-full grid-cols-[auto_1fr] gap-3 rounded-xl border bg-stone-25 px-4 py-4 text-left transition-[border-color,background-color,transform] hover:-translate-y-0.5 hover:border-brand-300",
-                    selectedTopic === topic.title ? "border-brand-400 bg-brand-50" : "border-stone-200"
-                  )}
+                <Link
+                  href={LEARN_HREF}
+                  className="grid h-full w-full grid-cols-[auto_1fr] gap-3 rounded-xl border border-stone-200 bg-stone-25 px-4 py-4 text-left transition-[border-color,transform] hover:-translate-y-0.5 hover:border-brand-300"
                 >
                   {(() => { const Icon = TOPIC_ICONS[topicIndex]; return <span className={cn("grid h-9 w-9 place-items-center rounded-lg", TOPIC_ICON_BACKGROUNDS[topicIndex])}><Icon className={cn("h-5 w-5", TOPIC_COLORS[topicIndex])} strokeWidth={1.8} aria-hidden="true" /></span>; })()}
-                  <span className="self-center text-[15px] font-semibold text-stone-900">{topic.title}</span>
-                </button>
+                  <span className="grid gap-1 self-center">
+                    <span className="text-[15px] font-semibold text-stone-900">{topic.title}</span>
+                    <span className="text-[13.5px] leading-snug text-stone-700">{topic.description}</span>
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
-          {selectedTopic && (
-            <div aria-live="polite" className="topic-panel-enter mt-3 grid gap-2.5 rounded-xl bg-stone-100 px-4 py-3.5 text-sm leading-relaxed text-stone-700">
-              <p className="font-medium text-brand-700">
-                {selectedTopic} · a little context
-              </p>
-              <p>{TOPIC_DETAILS[selectedTopic].detail}</p>
-              <p className="font-semibold text-brand-700">
-                {TOPIC_DETAILS[selectedTopic].next} <span aria-hidden="true">→</span>
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </section>
