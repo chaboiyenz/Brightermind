@@ -17,6 +17,17 @@ jobs:
     name: Build & deploy to dev
     runs-on: ubuntu-latest
     environment: dev # maps to a GitHub Environment with its own secrets/protection rules
+    # infra/ is still an empty scaffold (TDD §9): there is no region, no OIDC
+    # role, no ECR repository and no App Runner service to deploy to, so this
+    # job could only ever fail at its first AWS step and redden every merge to
+    # dev. Skipping keeps the workflow here as the blueprint it was written to
+    # be. Set the AWS_REGION repository variable (with AWS_DEPLOY_ROLE_ARN) to
+    # switch deploys back on — no edit to this file required.
+    #
+    # The condition tests `vars`, not `secrets`, because GitHub does not expose
+    # the secrets context to job-level `if` — a check on AWS_DEPLOY_ROLE_ARN
+    # would read as empty and skip forever, even after infra lands.
+    if: vars.AWS_REGION != ''
     steps:
       - uses: actions/checkout@v7
 

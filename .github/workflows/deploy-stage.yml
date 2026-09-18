@@ -17,6 +17,10 @@ jobs:
     name: Build & deploy to staging
     runs-on: ubuntu-latest
     environment: stage # can require reviewers in GitHub Environment settings if desired
+    # Skipped until AWS infra exists — same reasoning, and the same one-variable
+    # switch, as deploy-dev.yml. Without this a push to stage fails exactly the
+    # way dev did: "Input required and not supplied: aws-region".
+    if: vars.AWS_REGION != ''
     steps:
       - uses: actions/checkout@v7
 
