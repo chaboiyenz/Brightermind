@@ -6,6 +6,10 @@ export function connectingLabel(partnerName: string) {
 }
 
 export const CALL_ENDED_MESSAGE = "Session ended. Take care.";
+
+// The ended screen is otherwise a dead end — this is the way out of the call
+// shell. "Close" rather than "Back": the room is finished, not paused.
+export const CALL_CLOSE_LABEL = "Close";
 export const CALL_ERROR_MESSAGE = "Couldn't connect — retry?";
 
 // Real error conditions now that the call is a live Jitsi session (these
