@@ -5,7 +5,8 @@ RDS PostgreSQL (private subnet), S3, ECR, App Runner/ECS Fargate, Secrets Manage
 
 Status: empty scaffold — infra decisions are not yet final (TDD §9).
 
-Because of that, the deploy workflows in `.github/workflows/` skip their deploy job while the
-`AWS_REGION` repository variable is unset, rather than failing at the first AWS step. Setting
-that variable, along with the `AWS_DEPLOY_ROLE_ARN` secret, is what switches deploys on once
-the resources above exist — the workflows need no edit.
+Because of that, the deploy workflows in `.github/workflows/` skip their deploy job unless the
+`AWS_DEPLOYS_ENABLED` repository variable is `"true"`, rather than failing at the first AWS
+step. Once the resources above exist and the environments are configured per
+`docs/ci-cd/environment-setup.md`, setting that variable switches deploys on — the workflows
+need no edit.

@@ -30,10 +30,11 @@ jobs:
       # dispatched it. Letting the deploy job skip silently would report success
       # for a production deploy that never happened, so say why instead.
       - name: Check infra is configured
-        if: ${{ vars.AWS_REGION == '' }}
+        if: ${{ vars.AWS_DEPLOYS_ENABLED != 'true' }}
         run: |
           echo "AWS infra is not provisioned — infra/ is still an empty scaffold (TDD §9)."
-          echo "Set the AWS_REGION variable and the AWS_DEPLOY_ROLE_ARN secret before deploying."
+          echo "Provision it, configure the main environment per docs/ci-cd/environment-setup.md,"
+          echo "then set the AWS_DEPLOYS_ENABLED repository variable to \"true\"."
           exit 1
 
   deploy:
@@ -44,8 +45,9 @@ jobs:
     # reviewers under Settings > Environments so this job pauses for approval.
     environment: main
     # Belt and braces: the guard job above already fails a dispatch made before
-    # infra exists, so this only matters if that check is ever relaxed.
-    if: vars.AWS_REGION != ''
+    # infra exists, so this only matters if that check is ever relaxed. See
+    # deploy-dev.yml for why the switch is its own repository variable.
+    if: vars.AWS_DEPLOYS_ENABLED == 'true'
     steps:
       - uses: actions/checkout@v7
 
