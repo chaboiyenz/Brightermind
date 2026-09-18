@@ -59,18 +59,37 @@ user via `manage.py shell` or `createsuperuser` and sign in at the temporary
 
 ## Branch strategy
 
-| Branch  | Environment | Deployment                          |
-|---------|-------------|--------------------------------------|
-| `dev`   | Development | Auto-deploy on push                  |
-| `stage` | Staging     | Auto-deploy on push                  |
-| `main`  | Production  | Manual trigger, requires approval    |
+Feature branches merge into `dev` via PR, get promoted to `stage` for QA, then to
+`main` for production.
 
-See `docs/ci-cd/environment-setup.md` for GitHub Environment and AWS OIDC setup.
+| Branch  | Environment | Web (`apps/web`)                  | API (`apps/api`)                  |
+|---------|-------------|-----------------------------------|-----------------------------------|
+| `dev`   | Development | Auto-deploys to Vercel on push    | Not deployed — see below          |
+| `stage` | Staging     | Preview deploy on PR              | Not deployed — see below          |
+| `main`  | Production  | Not deployed                      | Not deployed — see below          |
+
+**Web.** The prototype deploys to Vercel from `dev`, running in mock mode with no
+backend. Pull requests get their own preview URL. See
+`docs/ci-cd/vercel-setup.md`.
+
+**API.** Nothing deploys yet. The `deploy-*.yml` workflows are a pipeline skeleton
+written ahead of the infrastructure (TDD §9): they build and push the API image to
+ECR, but the step that would deploy it is still a `TODO` placeholder, and `infra/`
+is an empty scaffold. Those workflows skip while the `AWS_REGION` variable is
+unset, so they don't fail merges. Roadmap Phase 7 tracks the remaining work.
+
+See `docs/ci-cd/environment-setup.md` for the GitHub Environment and AWS OIDC
+setup those workflows are waiting on.
 
 ## Status
 
-Scaffold only — no application code yet. Folder structure, CI workflow skeleton,
-and issue/PR templates are in place; environments (`dev`/`stage`/`main`) are set up
-on GitHub. See TDD.MD Section 9 for open questions and the migration audit/tickets
-in `docs/` for known issues carried over from v1 that must be resolved before their
-corresponding features are ported.
+Active development, not production-ready. The web app has substantial application
+code — landing page, screening tools, mood tracking, coping modules, community
+feed, and the role-based patient/psychologist shells — much of it running on mock
+data behind `NEXT_PUBLIC_MOCK_MODE` while the API is built out.
+
+Not yet done: real authentication, AWS infrastructure and deployment for the API,
+and the React Native app (`apps/mobile` is still an empty scaffold). See
+`docs/roadmap.md` for phase-by-phase status, TDD.md §9 for open technical
+questions, and the migration audit/tickets in `docs/` for v1 issues that must be
+resolved before their corresponding features are ported.
