@@ -20,7 +20,7 @@ jobs:
     # Skipped until AWS infra exists — same reasoning, and the same one-variable
     # switch, as deploy-dev.yml. Without this a push to stage fails exactly the
     # way dev did: "Input required and not supplied: aws-region".
-    if: vars.AWS_REGION != ''
+    if: vars.AWS_DEPLOYS_ENABLED == 'true'
     steps:
       - uses: actions/checkout@v7
 

@@ -39,6 +39,28 @@ For each environment, configure:
   human approval — the `environment: main` key in that workflow is what triggers
   the gate, combined with required reviewers configured here.
 
+### The master switch: `AWS_DEPLOYS_ENABLED`
+
+The per-environment settings above are not enough on their own. The deploy jobs
+are gated on a **repository** variable — Repo **Settings > Secrets and variables
+> Actions > Variables**:
+
+| Variable | Value | Effect |
+|---|---|---|
+| `AWS_DEPLOYS_ENABLED` | unset, or anything but `true` | Deploy jobs skip. This is the current state: `infra/` is an empty scaffold, so a deploy could only fail at its first AWS step and redden every merge. |
+| `AWS_DEPLOYS_ENABLED` | `true` | Deploy jobs run normally, using the environment secrets and variables above. |
+
+Set this **last**, once everything else in this document is done and the AWS
+resources actually exist. Turning it on before then puts the red X back.
+
+It has to be a repository variable, and it has to be separate from `AWS_REGION`,
+for a reason worth knowing: a job-level `if` is evaluated *before* GitHub
+resolves the job's `environment:`, so environment secrets and environment
+variables are both unreadable in that position. Gating on `AWS_REGION` — an
+environment variable, per the sections above — would read as empty forever and
+skip the deploy even after infra landed. Only repository and organization
+variables are visible to a job-level `if`.
+
 ## 3. AWS OIDC authorization (no stored access keys)
 
 Run `scripts/setup-oidc.sh` once per environment:
