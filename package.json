@@ -11,6 +11,6 @@
     "typecheck:web": "pnpm --filter web typecheck"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^10.0.6"
   }
 }
